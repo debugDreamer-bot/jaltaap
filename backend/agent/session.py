@@ -38,7 +38,7 @@ def answer(*, user_hash: str, channel: str, lang: str, text: str, last_location:
         metrics.add_metric(name="FallbackModelUsed", unit=MetricUnit.Count, value=1)
     if out["error"]:
         metrics.add_metric(name="ToolErrors", unit=MetricUnit.Count, value=1)
-    if ctx.last_location and ctx.last_location != last_location:
+    if channel != "web" and ctx.last_location and ctx.last_location != last_location:   # web sessions keep no user row
         dynamo.update_user(user_hash, last_geohash6=geohash(ctx.last_location["lat"], ctx.last_location["lon"], 6),
                            last_location_at=now_ist().isoformat(timespec="seconds"),
                            last_location_label=ctx.last_location.get("label") or "")

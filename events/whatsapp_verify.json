@@ -1,0 +1,20 @@
+{
+ "version": "2.0",
+ "routeKey": "GET /webhooks/whatsapp",
+ "rawPath": "/webhooks/whatsapp",
+ "headers": {},
+ "requestContext": {
+  "http": {
+   "method": "GET",
+   "path": "/webhooks/whatsapp",
+   "sourceIp": "127.0.0.1"
+  }
+ },
+ "body": null,
+ "isBase64Encoded": false,
+ "queryStringParameters": {
+  "hub.mode": "subscribe",
+  "hub.verify_token": "local-verify",
+  "hub.challenge": "1158201444"
+ }
+}

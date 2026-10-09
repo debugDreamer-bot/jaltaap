@@ -1,0 +1,18 @@
+{
+ "version": "2.0",
+ "routeKey": "POST /webhooks/whatsapp",
+ "rawPath": "/webhooks/whatsapp",
+ "headers": {
+  "content-type": "application/json",
+  "x-hub-signature-256": "sha256=65fc2b96c7873d7fd3615482fabdf48adf86530b3cdc4995e04232c588e7181c"
+ },
+ "requestContext": {
+  "http": {
+   "method": "POST",
+   "path": "/webhooks/whatsapp",
+   "sourceIp": "127.0.0.1"
+  }
+ },
+ "body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"WABA\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"phone_number_id\": \"123\"}, \"messages\": [{\"from\": \"919800000001\", \"timestamp\": \"1760000000\", \"id\": \"wamid.text1\", \"type\": \"text\", \"text\": {\"body\": \"\\u0915\\u0932 \\u0928\\u091c\\u092b\\u0917\\u0922\\u093c \\u092e\\u0947\\u0902 \\u0915\\u093e\\u092e \\u0915\\u092c \\u0915\\u0930\\u0942\\u0902?\"}}]}}]}]}",
+ "isBase64Encoded": false
+}

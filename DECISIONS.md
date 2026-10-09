@@ -46,3 +46,16 @@ Dated record of thresholds, trade-offs and choices made without asking the team
 - **Bedrock defaults** are `global.anthropic.claude-haiku-4-5-20251001-v1:0` (chat, vision) and
   `apac.amazon.nova-lite-v1:0` (fallback). These are template parameters: confirm with
   `scripts/check_bedrock.sh` in M0 and override at deploy time if the account sees other ids.
+
+## Results to keep honest (from backtests, 2026-10-09)
+
+- Backtest A headline: "11 days in 2026 were dangerous by humidity but never met a 40 C heatwave
+  rule" (Safdarjung, modelled, 1 Apr to 31 Jul 2026, 06:00-19:59). Do not round it.
+- The 22 May 2026 replay peaks at 42.0 C at Safdarjung in the model (news: 46 C), so it shows
+  ORANGE, not RED. Thresholds were NOT tuned to match headlines. If the team wants a RED replay
+  scene, 19 May 2026 is the modelled peak (44.4 C); changing the scenario is a team decision
+  because it changes what users see.
+- Backtest C does not yet separate reported from unreported spots, and years_seen includes 2026
+  (leakage). Open question for the team: should the flood score keep counting the current year?
+- Evals: not yet run against Bedrock (no AWS account on the build machine). Log pass rates here
+  after the first deployed run.

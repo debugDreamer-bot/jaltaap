@@ -1,0 +1,9 @@
+{
+ "Records": [
+  {
+   "messageId": "m1",
+   "body": "{\"channel\": \"telegram\", \"channel_user_id\": \"555\", \"message_id\": \"1001\", \"type\": \"text\", \"text\": \"Nearest cooling centre to Jama Masjid?\"}",
+   "eventSource": "aws:sqs"
+  }
+ ]
+}

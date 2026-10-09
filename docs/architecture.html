@@ -1,0 +1,43 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><title>JalTaap architecture</title>
+<style>
+  body{margin:0;background:#fff;font-family:-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:#1d2433}
+  .wrap{width:1600px;height:790px;padding:36px 44px;box-sizing:border-box;position:relative}
+  h1{font-size:30px;margin:0 0 4px} .sub{color:#5b6475;font-size:17px;margin-bottom:22px}
+  .row{display:grid;gap:18px;margin-bottom:16px}
+  .b{border:1.5px solid #c9d0db;border-radius:12px;padding:12px 14px;background:#f8fafc}
+  .b h3{margin:0 0 4px;font-size:18px} .b p{margin:0;font-size:14.5px;color:#4b5563;line-height:1.35}
+  .aws{border-color:#f29d38;background:#fff7ed} .core{border:2.5px solid #2563eb;background:#eff6ff}
+  .ext{border-style:dashed;background:#fff}
+  .tag{display:inline-block;font-size:11.5px;font-weight:700;letter-spacing:.04em;color:#b45309;background:#ffedd5;border-radius:6px;padding:2px 6px;margin-left:6px;vertical-align:2px}
+  .tag.os{color:#166534;background:#dcfce7}
+  .arrow{color:#64748b;font-size:14px;text-align:center;margin:-6px 0 6px}
+  .foot{position:absolute;left:44px;right:44px;bottom:30px;border-radius:12px;background:#f1f5f9;border:1.5px solid #cbd5e1;padding:12px;text-align:center;font-size:15px;color:#334155}
+</style></head><body><div class="wrap">
+<h1>JalTaap on AWS (ap-south-1)</h1>
+<div class="sub">Risk comes from a tested Python engine; Bedrock only talks and checks photos. Arrows show the main data flow.</div>
+<div class="row" style="grid-template-columns:1fr 1fr 1fr">
+  <div class="b"><h3>Workers</h3><p>WhatsApp or Telegram, in Hindi, Hinglish or English</p></div>
+  <div class="b"><h3>Public and judges</h3><p>React web app on <b>AWS Amplify Hosting</b>: map, replays, chat</p></div>
+  <div class="b"><h3>Officers</h3><p><b>Amazon Cognito</b> login; agency report queue and AI action brief</p></div>
+</div>
+<div class="arrow">▼</div>
+<div class="row" style="grid-template-columns:1fr"><div class="b aws"><h3>Amazon API Gateway (HTTP API)</h3><p>Webhooks verify the signature, deduplicate on message id and return 200 fast · /chat · /risk · /replay · officer routes with a Cognito JWT authorizer</p></div></div>
+<div class="arrow">▼ messages</div>
+<div class="row" style="grid-template-columns:1fr 1.15fr 1fr">
+  <div class="b aws"><h3>Amazon SQS inbound queue</h3><p>Batch size 1, three retries, then a dead-letter queue</p></div>
+  <div class="b aws"><h3>Agent worker · AWS Lambda <span class="tag os">STRANDS AGENTS</span></h3><p>Six tools bound to the user: resolve_location, get_heat_plan, find_relief, get_flood_risk, check_route, manage_subscription. Consent, STOP, 112 guard, 600-character replies</p></div>
+  <div class="b aws"><h3>Amazon Bedrock</h3><p>Chat model with a Nova fallback; vision model returns strict JSON for photos</p></div>
+</div>
+<div class="row" style="grid-template-columns:1fr 1.15fr 1fr">
+  <div class="b aws"><h3>Amazon EventBridge Scheduler</h3><p>Hourly risk refresh (36 cells, now to +48 h); 05:30 IST daily brief</p></div>
+  <div class="b core"><h3>Risk engine · pure Python, unit-tested</h3><p>Heat bands from wet-bulb OR temperature, hot-night / duration / profile escalation, noon pause. Waterlogging = susceptibility × rain factor + antecedent bonus; CONFIRMED by verified photos</p></div>
+  <div class="b ext"><h3>Open-Meteo (external)</h3><p>Forecast, historical and previous-runs APIs · CC BY 4.0</p></div>
+</div>
+<div class="row" style="grid-template-columns:1fr 1.15fr 1fr">
+  <div class="b aws"><h3>Alert sender · Lambda</h3><p>SQS alert queue → WhatsApp, Telegram or <b>Amazon SES</b> email; once per hazard per area per 6 h</p></div>
+  <div class="b aws"><h3>Amazon DynamoDB + Amazon S3</h3><p>Users (KMS), subscriptions, risk cache, reports, conversations, idempotency · private photos, EXIF-free thumbnails, replays</p></div>
+  <div class="b aws"><h3>Photo verifier · Lambda</h3><p>S3 upload event → resize → Bedrock vision → confidence ≥ 0.7 changes the map; routed to the owning agency</p></div>
+</div>
+<div class="foot"><b>AWS SAM</b> <span class="tag os">OPEN SOURCE</span> defines the whole stack · <b>Powertools for AWS Lambda</b> <span class="tag os">OPEN SOURCE</span> logs, metrics, tracing · Amazon CloudWatch dashboard JalTaap-Ops and alarms · Amazon Location Service maps and geocoding · SSM Parameter Store secrets · AWS Budgets at USD 10 and 25</div>
+</div></body></html>

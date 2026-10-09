@@ -1,0 +1,18 @@
+{
+ "version": "2.0",
+ "routeKey": "POST /webhooks/telegram",
+ "rawPath": "/webhooks/telegram",
+ "headers": {
+  "content-type": "application/json",
+  "x-telegram-bot-api-secret-token": "local-tg-secret"
+ },
+ "requestContext": {
+  "http": {
+   "method": "POST",
+   "path": "/webhooks/telegram",
+   "sourceIp": "127.0.0.1"
+  }
+ },
+ "body": "{\"update_id\": 1002, \"message\": {\"message_id\": 2, \"date\": 1760000000, \"chat\": {\"id\": 555, \"type\": \"private\"}, \"photo\": [{\"file_id\": \"small\", \"file_size\": 900, \"width\": 90, \"height\": 90}, {\"file_id\": \"FILE_ID_LARGE\", \"file_size\": 90000, \"width\": 1280, \"height\": 960}], \"caption\": \"Zakhira\"}}",
+ "isBase64Encoded": false
+}

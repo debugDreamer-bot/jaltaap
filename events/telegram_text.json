@@ -1,0 +1,18 @@
+{
+ "version": "2.0",
+ "routeKey": "POST /webhooks/telegram",
+ "rawPath": "/webhooks/telegram",
+ "headers": {
+  "content-type": "application/json",
+  "x-telegram-bot-api-secret-token": "local-tg-secret"
+ },
+ "requestContext": {
+  "http": {
+   "method": "POST",
+   "path": "/webhooks/telegram",
+   "sourceIp": "127.0.0.1"
+  }
+ },
+ "body": "{\"update_id\": 1001, \"message\": {\"message_id\": 1, \"date\": 1760000000, \"chat\": {\"id\": 555, \"type\": \"private\"}, \"text\": \"bhai aaj dhoop me kab tak kaam karu\"}}",
+ "isBase64Encoded": false
+}

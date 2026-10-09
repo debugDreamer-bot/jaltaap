@@ -1,0 +1,18 @@
+{
+ "version": "2.0",
+ "routeKey": "POST /webhooks/whatsapp",
+ "rawPath": "/webhooks/whatsapp",
+ "headers": {
+  "content-type": "application/json",
+  "x-hub-signature-256": "sha256=0c8404486a2c0c13b883632983cd4d66fb9f6c8d85cb6c88eb42ba1b6c643616"
+ },
+ "requestContext": {
+  "http": {
+   "method": "POST",
+   "path": "/webhooks/whatsapp",
+   "sourceIp": "127.0.0.1"
+  }
+ },
+ "body": "{\"object\": \"whatsapp_business_account\", \"entry\": [{\"id\": \"WABA\", \"changes\": [{\"field\": \"messages\", \"value\": {\"messaging_product\": \"whatsapp\", \"metadata\": {\"phone_number_id\": \"123\"}, \"messages\": [{\"from\": \"919800000001\", \"timestamp\": \"1760000000\", \"id\": \"wamid.loc1\", \"type\": \"location\", \"location\": {\"latitude\": 28.6092, \"longitude\": 76.9798, \"name\": \"Najafgarh\"}}]}}]}]}",
+ "isBase64Encoded": false
+}

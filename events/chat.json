@@ -1,0 +1,17 @@
+{
+ "version": "2.0",
+ "routeKey": "POST /chat",
+ "rawPath": "/chat",
+ "headers": {
+  "content-type": "application/json"
+ },
+ "requestContext": {
+  "http": {
+   "method": "POST",
+   "path": "/chat",
+   "sourceIp": "127.0.0.1"
+  }
+ },
+ "body": "{\"session_id\": \"local-session-01\", \"message\": \"Najafgarh mein aaj kaam kab karun?\"}",
+ "isBase64Encoded": false
+}

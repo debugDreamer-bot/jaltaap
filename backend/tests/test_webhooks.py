@@ -95,3 +95,17 @@ def test_telegram_parse_photo_picks_largest():
     upd = {"update_id": 1, "message": {"chat": {"id": 1}, "photo": [{"file_id": "s", "file_size": 10},
                                                                     {"file_id": "L", "file_size": 999}]}}
     assert telegram.parse_update(upd)[0].media_id == "L"
+
+
+def test_sample_events_are_valid():
+    """events/*.json must stay usable with sam local invoke (signed with the local app secret)."""
+    from pathlib import Path
+    root = Path(__file__).resolve().parents[2] / "events"
+    secret = json.loads((root / "env.json").read_text())["Parameters"]["JALTAAP_SECRET_WHATSAPP_APP_SECRET"]
+    for name in ("whatsapp_text", "whatsapp_location", "whatsapp_image", "whatsapp_audio"):
+        ev = json.loads((root / f"{name}.json").read_text())
+        assert whatsapp.verify_signature(ev["body"].encode(), ev["headers"]["x-hub-signature-256"], secret), name
+        assert len(whatsapp.parse_inbound(json.loads(ev["body"]))) == 1
+    for name in ("telegram_text", "telegram_photo"):
+        ev = json.loads((root / f"{name}.json").read_text())
+        assert len(telegram.parse_update(json.loads(ev["body"]))) == 1

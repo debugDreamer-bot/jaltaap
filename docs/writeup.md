@@ -43,7 +43,7 @@ engineers who own waterlogging spots.
   deduplicate on the message id and enqueue to SQS.
 - **A Lambda worker runs a Strands agent.** It has six tools bound to the user. The model never
   sees a phone number and cannot message anyone.
-- **The tools call a pure-Python risk engine.** It is driven by `risk.yaml` and covered by 126
+- **The tools call a pure-Python risk engine.** It is driven by `risk.yaml` and covered by 127
   unit tests. EventBridge Scheduler runs the same engine every hour for 36 grid cells and every
   hotspot.
 - **Heat is scored per hour.** An hour is RED if wet-bulb ≥ 30 °C or temperature ≥ 44 °C,

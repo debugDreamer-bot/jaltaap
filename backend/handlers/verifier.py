@@ -42,11 +42,19 @@ def corroborated(report: dict) -> bool:
     return False
 
 
+def reporter_trust(report: dict) -> float:
+    """1.0 by default; officers marking a reporter's photos false lowers it (min 0)."""
+    if report.get("channel") == "web" or not report.get("user_hash"):
+        return 1.0
+    user = dynamo.get_user(report["user_hash"]) or {}
+    return max(0.0, min(1.0, float(user.get("trust", 1.0))))
+
+
 def decide(verdict, report: dict) -> tuple[str, float]:
     """Pure decision: (status, confidence) from a verdict, after corroboration."""
     if verdict is None:
         return "needs_review", 0.0
-    conf = verdict.confidence
+    conf = verdict.confidence * reporter_trust(report)
     if verdict.relevant and corroborated(report):
         conf = min(1.0, conf + CORROBORATION_BONUS)
     if verdict.relevant and conf >= MIN_CONFIDENCE:

@@ -56,7 +56,7 @@ on the map, tagged with the agency that owns that spot.
 The rule we never broke: **the language model never computes risk.**
 
 - **Risk lives in tested Python.** All of it is in a small Python package driven by a YAML file,
-  with 126 unit tests.
+  with 127 unit tests.
 - **The agent only phrases tool results.** A [Strands Agents](https://strandsagents.com/) agent
   on AWS Lambda has six tools that call that package, and replies in the user's language. Every
   reply that uses forecast data ends with the data's timestamp.

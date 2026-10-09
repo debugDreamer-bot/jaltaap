@@ -62,6 +62,11 @@ COPY: dict[str, dict[str, str]] = {
         "hi": "आप किस इलाके में हैं? जगह का नाम लिखें या अपनी लोकेशन पिन भेजें।",
         "hinglish": "Aap kis ilaake mein hain? Jagah ka naam likhein ya location pin bhejein.",
     },
+    "ask_photo": {
+        "en": "Send a photo of the waterlogging, leak or problem, then share your location pin.",
+        "hi": "जलभराव, लीकेज या समस्या की फ़ोटो भेजें, फिर अपनी लोकेशन पिन भेजें।",
+        "hinglish": "Paani bharne, leak ya problem ki photo bhejein, phir apni location pin bhejein.",
+    },
     "outside_delhi": {
         "en": "That location is outside Delhi. JalTaap covers Delhi for now.",
         "hi": "यह जगह दिल्ली से बाहर है। अभी जलताप सिर्फ़ दिल्ली के लिए है।",

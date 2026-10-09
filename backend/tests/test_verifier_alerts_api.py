@@ -232,3 +232,13 @@ def test_dhash_is_stable_under_recompression_and_differs_for_other_images():
     recompressed = photo.open_image(photo.for_model(a))
     assert photo.hamming(photo.phash(a), photo.phash(recompressed)) <= 4
     assert photo.hamming(photo.phash(a), photo.phash(flipped)) > 20
+
+
+def test_low_trust_reporter_needs_review(aws, sent):
+    from handlers.verifier import verify
+    dynamo.put_user("u1", channel="telegram", channel_id="1", lang="en")
+    dynamo.update_user("u1", trust=0.5)
+    r = _report("R10", channel="telegram")
+    _put(r["s3_key"], _jpeg())
+    out = verify("jaltaap-test-bucket", r["s3_key"], bedrock=FakeBedrock([json.dumps(GOOD)]))
+    assert out["status"] == "needs_review" and out["confidence"] == 0.41

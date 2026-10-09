@@ -125,7 +125,7 @@ backend/
   handlers/          webhook_whatsapp, webhook_telegram, worker, chat_api, risk_refresh, daily_brief,
                      alert_sender, verifier, public_api, officer_api
   refdata/           bundled fallback copy of data/*.json
-  tests/             126 pytest tests (moto for AWS)
+  tests/             127 pytest tests (moto for AWS)
 web/                 React + Vite + TypeScript + MapLibre + Tailwind + i18next (see web/README.md)
 data/                seed CSVs, geocoding script, grid, GEOCODING_REVIEW.md
 backtests/           Backtests A, B, C and the replay builder, with outputs/
@@ -138,7 +138,7 @@ docs/                api-contract.md, writeup.md, blog.md, architecture.png
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt
-.venv/bin/pytest                                   # 126 tests: risk engine, webhooks, worker, verifier, APIs
+.venv/bin/pytest                                   # 127 tests: risk engine, webhooks, worker, verifier, APIs
 .venv/bin/python scripts/dev_api.py --port 8787    # real handlers on moto + live Open-Meteo
 cd web && npm install && VITE_API_URL=http://127.0.0.1:8787 npm run dev
 ```

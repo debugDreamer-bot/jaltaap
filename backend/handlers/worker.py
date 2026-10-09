@@ -26,6 +26,21 @@ def _send(msg: InboundMessage, text: str) -> None:
     metrics.add_metric(name="RepliesOut", unit=MetricUnit.Count, value=1)
 
 
+MENU = {"en": ("What do you need?", ["Heat plan", "Flood check", "Report"]),
+        "hi": ("आपको क्या चाहिए?", ["गर्मी प्लान", "जलभराव जाँच", "रिपोर्ट"]),
+        "hinglish": ("Aapko kya chahiye?", ["Heat plan", "Flood check", "Report"])}
+
+
+def _send_menu(msg: InboundMessage, lang: str) -> None:
+    """Three WhatsApp reply buttons; a tap comes back as an interactive message with the title."""
+    from common.channels import whatsapp
+    body, titles = MENU.get(lang, MENU["en"])
+    try:
+        whatsapp.send_buttons(msg.channel_user_id, body, list(zip(("heat", "flood", "report"), titles)))
+    except Exception:  # noqa: BLE001 - buttons are a convenience; never fail the turn
+        logger.exception("could not send menu buttons")
+
+
 def _raw_key(report_id: str) -> str:
     d = now_ist()
     return f"reports/raw/{d:%Y}/{d:%m}/{d:%d}/{report_id}.jpg"
@@ -69,6 +84,8 @@ def process(msg: InboundMessage) -> None:
     if user is None:
         user = dynamo.put_user(uh, channel=msg.channel, channel_id=msg.channel_user_id, lang=lang)
         _send(msg, i18n.t("consent", lang))
+        if msg.channel == "whatsapp":
+            _send_menu(msg, lang)
     elif text and user.get("lang") != lang:
         dynamo.update_user(uh, lang=lang)
 
@@ -115,6 +132,10 @@ def process(msg: InboundMessage) -> None:
 
     if not text:
         _send(msg, i18n.t("ask_location", lang))
+        return
+
+    if msg.type == "interactive" and text in ("Report", "रिपोर्ट"):
+        _send(msg, i18n.t("ask_photo", lang))
         return
 
     out = answer(user_hash=uh, channel=msg.channel, lang=lang, text=text,

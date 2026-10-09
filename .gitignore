@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+.aws-sam/
+samconfig.local.toml
+node_modules/
+web/dist/
+.env
+.env.*
+!.env.example
+.DS_Store
+backtests/.cache/

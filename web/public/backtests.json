@@ -1,0 +1,6 @@
+{
+ "heat_missed_days": 11,
+ "heat_missed_sentence": "11 days in 2026 were dangerous by humidity but never met a 40 C heatwave rule.",
+ "chart": "/backtest_heat_2026.png",
+ "qualifier": "Modelled data (Open-Meteo reanalysis grid point near Safdarjung), 1 Apr to 31 Jul 2026, daytime 06:00-19:59 IST."
+}

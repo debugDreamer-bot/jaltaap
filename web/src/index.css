@@ -1,0 +1,177 @@
+@import "tailwindcss";
+
+@theme {
+  --color-brand: #0b3d5c;
+  --color-brand-dark: #072a40;
+  --color-ink: #1a1a1a;
+  --color-muted: #495057;
+  --color-line: #ced4da;
+  --color-panel: #ffffff;
+  --color-canvas: #f1f3f5;
+  --color-focus: #f59f00;
+  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", sans-serif;
+}
+
+/* Hindi pages prefer Noto Sans Devanagari (loaded from Google Fonts in index.html). */
+:lang(hi) {
+  font-family: "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+html,
+body {
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--color-ink);
+  background: var(--color-canvas);
+  -webkit-text-size-adjust: 100%;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  overflow-x: hidden;
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+button,
+select,
+input,
+textarea {
+  font: inherit;
+  font-size: 16px; /* also stops iOS zoom-on-focus */
+}
+
+a {
+  color: inherit;
+}
+
+::placeholder {
+  color: #6c757d;
+  opacity: 1;
+}
+
+.link {
+  color: #0b5394;
+  text-decoration: underline;
+}
+
+.mock-banner {
+  background: repeating-linear-gradient(135deg, #ffe066 0 14px, #fcc419 14px 28px);
+  color: #1a1a1a;
+  border-bottom: 2px solid #1a1a1a;
+}
+
+.attribution {
+  font-size: 16px;
+  color: var(--color-muted);
+}
+
+/* MapLibre popups: keep our 16 px minimum and readable widths at 360 px. */
+.maplibregl-popup {
+  max-width: min(320px, calc(100vw - 32px)) !important;
+}
+
+.maplibregl-popup-content {
+  font-size: 16px;
+  line-height: 1.45;
+  padding: 12px 36px 12px 14px;
+  border-radius: 10px;
+  color: var(--color-ink);
+  box-shadow: 0 4px 18px rgb(0 0 0 / 0.25);
+}
+
+.maplibregl-popup-close-button {
+  font-size: 24px;
+  width: 36px;
+  height: 36px;
+  line-height: 1;
+}
+
+.popup-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.popup-row {
+  display: flex;
+  gap: 8px;
+  justify-content: space-between;
+}
+
+.popup-row dt {
+  color: var(--color-muted);
+}
+
+.popup-row dd {
+  font-weight: 600;
+  text-align: right;
+}
+
+.popup-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  margin: 2px 0 6px;
+}
+
+.popup-swatch {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
+}
+
+.popup-thumb {
+  display: block;
+  width: 100%;
+  max-height: 160px;
+  object-fit: cover;
+  border-radius: 6px;
+  margin-bottom: 8px;
+  background: #e9ecef;
+}
+
+.popup-meta {
+  color: var(--color-muted);
+  margin-top: 6px;
+}
+
+.typing-dot {
+  animation: typing 1.2s infinite ease-in-out;
+}
+.typing-dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+.typing-dot:nth-child(3) {
+  animation-delay: 0.3s;
+}
+@keyframes typing {
+  0%, 80%, 100% { opacity: 0.25; }
+  40% { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .typing-dot {
+    animation: none;
+  }
+}
+
+/* Range input: large thumb for touch. */
+input[type="range"].slider {
+  width: 100%;
+  height: 44px;
+  accent-color: var(--color-brand);
+  cursor: pointer;
+}

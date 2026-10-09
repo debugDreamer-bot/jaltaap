@@ -1,0 +1,7 @@
+# Runtime dependencies for DepsLayer. strands-agents (and its pydantic) come from the official
+# Strands Lambda layer; boto3 comes from the Lambda runtime.
+aws-lambda-powertools[tracer]==3.35.0
+httpx==0.28.1
+pyyaml==6.0.3
+python-ulid==4.0.1
+Pillow==12.2.0

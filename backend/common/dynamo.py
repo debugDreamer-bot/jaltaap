@@ -165,9 +165,11 @@ def all_subscriptions() -> list[dict]:
     return [from_dynamo(i) for i in items]
 
 
-def mark_alerted(pk: str, sk: str, when_iso: str) -> None:
+def mark_alerted(pk: str, sk: str, when_iso: str, field: str = "last_alert_at") -> None:
+    """Stamp last_alert_at (6-hour dedupe) or last_brief_at (one brief a day)."""
     table(settings().subscriptions_table).update_item(
-        Key={"pk": pk, "sk": sk}, UpdateExpression="SET last_alert_at = :t", ExpressionAttributeValues={":t": when_iso})
+        Key={"pk": pk, "sk": sk}, UpdateExpression="SET #f = :t",
+        ExpressionAttributeNames={"#f": field}, ExpressionAttributeValues={":t": when_iso})
 
 
 def get_subscription(pk: str, sk: str) -> dict | None:

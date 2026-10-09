@@ -20,3 +20,29 @@ Dated record of thresholds, trade-offs and choices made without asking the team
 - **Delhi bounding box = grid extent.** lat 28.35 to 28.95, lon 76.75 to 77.35 (the 36 grid
   points plus half a cell). Locations outside are rejected.
 - **Stull check.** All six spec wet-bulb values reproduce within 0.06 C, so no correction needed.
+- **Perceptual hash is a pure-Pillow dHash, not the imagehash library.** imagehash pulls in numpy,
+  scipy and PyWavelets (~150 MB), which would crowd the 250 MB Lambda layer limit next to the
+  Strands layer. dHash is a standard perceptual hash; duplicates are Hamming distance <= 4 of 64.
+- **Geohash is implemented in `common/geo.py`.** geohash2 ships only as a source distribution, so it
+  cannot be fetched as a Linux wheel without Docker. A unit test checks our encoder against geohash2.
+- **DepsLayer is built with a Makefile from Linux wheels** (`--platform manylinux2014_x86_64`), so
+  `sam build` works on a Mac without Docker. botocore and friends are removed from the layer because
+  the Lambda runtime provides them. Every function gets the Strands layer (for pydantic) + DepsLayer.
+- **Webhook dedupe uses a conditional put on the Idempotency table** (`attribute_not_exists(pk)`)
+  instead of the Powertools idempotency decorator: the key is the channel message id, which the
+  webhook already has, and the behaviour is easy to unit test. Powertools provides logs, metrics
+  and tracing.
+- **Officer queue endpoint added.** The spec lists PATCH /reports/{id} and GET /briefs/{agency} but no
+  list call for /officer, so `GET /officer/reports` (Cognito, own agency only) was added. Web reports
+  poll `GET /reports/{id}/status`, also added. Both are documented in docs/api-contract.md.
+- **Officer brief uses Bedrock Converse directly** with strict JSON output, and drops any action that
+  cites a report id that was not in the input, so the brief cannot invent evidence.
+- **Agency claim comes from the Cognito ID token** (`custom:agency`); the web app sends the ID token as
+  the Bearer token because access tokens do not carry custom attributes.
+- **Last location is stored only as geohash6** (about 1 km) with a timestamp; it is used for 6 hours.
+  A photo sent without a recent location waits under reports/hold/ (1-day lifecycle) until a pin arrives.
+- **Emergency guard is deterministic.** Besides the prompt, a keyword check (English, Hinglish, Hindi)
+  forces "Call 112 now" onto line 1 when heatstroke signs are described, even if the model forgets.
+- **Bedrock defaults** are `global.anthropic.claude-haiku-4-5-20251001-v1:0` (chat, vision) and
+  `apac.amazon.nova-lite-v1:0` (fallback). These are template parameters: confirm with
+  `scripts/check_bedrock.sh` in M0 and override at deploy time if the account sees other ids.

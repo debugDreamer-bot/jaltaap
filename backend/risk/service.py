@@ -64,7 +64,8 @@ def heat_plan(lat: float, lon: float, *, label: str, day: str | None = None, pro
 def grid_series() -> dict[str, dict]:
     """Forecast series for all 36 grid cells in one Open-Meteo request."""
     cells = gridmod.cells()
-    data = fetch_points([(c["lat"], c["lon"]) for c in cells], forecast_days=3, past_days=1)
+    # past_days=2: the duration rule needs the previous two days' bands
+    data = fetch_points([(c["lat"], c["lon"]) for c in cells], forecast_days=3, past_days=2)
     return {c["id"]: s for c, s in zip(cells, data)}
 
 

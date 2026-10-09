@@ -1,0 +1,9 @@
+# Local development and tests (Python 3.12+). Runtime deps are in layer/requirements.txt.
+-r ../layer/requirements.txt
+strands-agents>=1.59
+boto3
+pydantic>=2.7
+pytest
+moto[dynamodb,s3,sqs,ssm]
+geohash2   # reference implementation for the geohash unit test only
+matplotlib # backtest charts

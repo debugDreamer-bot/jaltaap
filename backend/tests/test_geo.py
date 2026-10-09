@@ -37,3 +37,13 @@ def test_point_to_segment():
     a, b = (28.60, 77.20), (28.60, 77.30)
     assert point_to_segment_m(28.605, 77.25, a, b) == pytest.approx(556, rel=0.02)
     assert point_to_segment_m(28.60, 77.35, a, b) == pytest.approx(haversine_m(28.60, 77.30, 28.60, 77.35), rel=0.01)
+
+
+def test_geohash_matches_reference_library():
+    geohash2 = pytest.importorskip("geohash2")   # dev-only reference implementation
+    from common.geo import geohash_decode
+    for lat, lon in [(28.6139, 77.2090), (28.4, 76.8), (28.9, 77.3), (-33.86, 151.21), (51.5, -0.12)]:
+        for p in (5, 6, 7):
+            assert geohash(lat, lon, p) == geohash2.encode(lat, lon, precision=p)
+        dlat, dlon = geohash_decode(geohash(lat, lon, 7))
+        assert abs(dlat - lat) < 0.001 and abs(dlon - lon) < 0.001

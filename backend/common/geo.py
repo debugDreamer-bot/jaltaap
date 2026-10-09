@@ -3,8 +3,6 @@ from __future__ import annotations
 
 import math
 
-import geohash2
-
 EARTH_R_M = 6_371_000.0
 
 
@@ -15,8 +13,42 @@ def haversine_m(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
     return 2 * EARTH_R_M * math.asin(math.sqrt(a))
 
 
+_BASE32 = "0123456789bcdefghjkmnpqrstuvwxyz"
+
+
 def geohash(lat: float, lon: float, precision: int) -> str:
-    return geohash2.encode(lat, lon, precision=precision)
+    """Standard geohash encoding (base32, interleaved lon/lat bits)."""
+    lat_r, lon_r = [-90.0, 90.0], [-180.0, 180.0]
+    out, bits, bit_count, even = [], 0, 0, True
+    while len(out) < precision:
+        rng, val = (lon_r, lon) if even else (lat_r, lat)
+        mid = (rng[0] + rng[1]) / 2
+        if val >= mid:
+            bits, rng[0] = (bits << 1) | 1, mid
+        else:
+            bits, rng[1] = bits << 1, mid
+        even, bit_count = not even, bit_count + 1
+        if bit_count == 5:
+            out.append(_BASE32[bits])
+            bits, bit_count = 0, 0
+    return "".join(out)
+
+
+def geohash_decode(code: str) -> tuple[float, float]:
+    """Centre (lat, lon) of a geohash cell."""
+    lat_r, lon_r = [-90.0, 90.0], [-180.0, 180.0]
+    even = True
+    for ch in code:
+        idx = _BASE32.index(ch)
+        for shift in range(4, -1, -1):
+            rng = lon_r if even else lat_r
+            mid = (rng[0] + rng[1]) / 2
+            if (idx >> shift) & 1:
+                rng[0] = mid
+            else:
+                rng[1] = mid
+            even = not even
+    return (lat_r[0] + lat_r[1]) / 2, (lon_r[0] + lon_r[1]) / 2
 
 
 def point_to_segment_m(lat: float, lon: float, a: tuple[float, float], b: tuple[float, float]) -> float:

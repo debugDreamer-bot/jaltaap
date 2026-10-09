@@ -1,0 +1,37 @@
+# JalTaap risk configuration. Every threshold is a starting value: calibrate on the replays
+# and record final values (with the date) in DECISIONS.md. Code reads this file; never
+# hard-code a threshold in Python.
+
+heat:
+  version: 1
+  bands:                 # evaluated top-down; first match wins
+    - {name: RED,    wet_bulb_c: 30, temp_c: 44}
+    - {name: ORANGE, wet_bulb_c: 28, temp_c: 40}
+    - {name: YELLOW, wet_bulb_c: 25, temp_c: 37}
+    - {name: GREEN}
+  escalate:              # environment adds at most +1, profile at most +1; result capped at RED
+    hot_night_min_c: 30          # last night's minimum at or above this
+    duration_days: 3             # third consecutive day at ORANGE or worse
+    profile_flags: [heavy_work, age_60_plus, pregnant, chronic_illness, not_acclimatised]
+  noon_pause: {from: "12:00", to: "15:00", min_band: ORANGE}   # Delhi Heat Action Plan 2026
+  day_band_window: {from: "06:00", to: "20:00"}                # day band = worst hour in this window
+
+flood:
+  version: 1
+  susceptibility:
+    base: 0.4
+    per_extra_year_listed: 0.15     # each year on official lists beyond the first
+    underpass_bonus: 0.2
+    max: 1.0
+  rain_factor:                      # first match wins; either rain threshold is enough
+    - {factor: 1.00, next_1h_mm: 35, next_3h_mm: 60}
+    - {factor: 0.75, next_1h_mm: 20, next_3h_mm: 40}
+    - {factor: 0.50, next_1h_mm: 10, next_3h_mm: 20}
+    - {factor: 0.25, next_1h_mm: 5}
+  antecedent_bonus: {last_24h_mm: 64.5, add: 0.10}   # IMD heavy-rain day threshold
+  levels: {SEVERE: 0.75, HIGH: 0.50, MEDIUM: 0.25}   # below 0.25 is LOW
+  crowd:
+    confirm_radius_m: 300
+    confirm_window_h: 2
+    min_confidence: 0.7
+    expire_after_h: 3               # listed spots usually clear in 1 to 3 hours

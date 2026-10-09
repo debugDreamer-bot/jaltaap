@@ -11,3 +11,4 @@ web/dist/
 !.env.example
 .DS_Store
 backtests/.cache/
+evals/last_run.json

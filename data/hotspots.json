@@ -1,0 +1,440 @@
+[
+ {
+  "id": "hs_minto_bridge",
+  "name": "Minto Bridge underpass",
+  "type": "underpass",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 3,
+  "years": [
+   2021,
+   2025,
+   2026
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.etvbharat.com/english/state/delhi/delhi-pwd-identifies-seven-critical-waterlogging-points/na20210802220845760",
+  "lat": 28.63345,
+  "lon": 77.22667,
+  "coord_source": "nominatim:Minto Bridge, Delhi",
+  "coord_note": "Shivaji Bridge, Babar Road, Kashmiri Market, Connaught Place, New Delhi, Delhi, 110001, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_pul_prahladpur",
+  "name": "Pul Prahladpur underpass",
+  "type": "underpass",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 2,
+  "years": [
+   2021,
+   2022
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.etvbharat.com/english/state/delhi/delhi-pwd-identifies-seven-critical-waterlogging-points/na20210802220845760",
+  "lat": 28.49916,
+  "lon": 77.29144,
+  "coord_source": "nominatim:Pul Prahladpur, Delhi",
+  "coord_note": "elegantcasa, ,60 Feet Road, Pul Prahladpur, Surajkund Road, Surajkund, Central, New Delhi, Faridabad, South East Delhi, Delhi, 110044, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_azadpur",
+  "name": "Azadpur market underpass",
+  "type": "underpass",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 3,
+  "years": [
+   2022,
+   2025,
+   2026
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.theweek.in/wire-updates/national/2025/06/19/des66-dl-pwd-waterlogging.html",
+  "lat": 28.70578,
+  "lon": 77.18195,
+  "coord_source": "nominatim:Azadpur, Delhi",
+  "coord_note": "Azadpur (Pink Line), Mahatma Gandhi Marg, Ashok Vihar, Shalimar Bagh, Keshavpuram, Delhi, Central North Delhi, Delhi, 110088, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_zakhira",
+  "name": "Zakhira flyover and underpass",
+  "type": "underpass",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 2,
+  "years": [
+   2022,
+   2026
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html",
+  "lat": 28.66763,
+  "lon": 77.16744,
+  "coord_source": "nominatim:Zakhira, Delhi",
+  "coord_note": "Zakhira Flyover, Amar Park, Patel Nagar, Karol Bagh, Delhi, Central Delhi, Delhi, 110035, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_ito",
+  "name": "ITO",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2025
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.theweek.in/wire-updates/national/2025/06/19/des66-dl-pwd-waterlogging.html",
+  "lat": 28.62819,
+  "lon": 77.24104,
+  "coord_source": "nominatim:ITO, Delhi",
+  "coord_note": "ITO, Bahadur Shah Zafar Marg, City & Sadar, New Delhi, Old Delhi, Delhi, 110002, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_dhaula_kuan",
+  "name": "Dhaula Kuan",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.newkerala.com/news/a/delhi-pwd-minister-parvesh-sahib-singh-reviews-monsoon-365.htm",
+  "lat": 28.59187,
+  "lon": 77.16172,
+  "coord_source": "nominatim:Dhaula Kuan, Delhi",
+  "coord_note": "Dhaula Kuan, NH48, Dhaula Kuan, Delhi Cantonment, New Delhi, Delhi, 110021, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_moolchand",
+  "name": "Moolchand underpass",
+  "type": "underpass",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.newkerala.com/news/a/delhi-pwd-minister-parvesh-sahib-singh-reviews-monsoon-365.htm",
+  "lat": 28.5652,
+  "lon": 77.23612,
+  "coord_source": "nominatim:Moolchand underpass, Delhi",
+  "coord_note": "Moolchand Underpass, Lajpat Nagar III, Lajpat Nagar, Central, Delhi, South East Delhi, Delhi, 110065, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_pragati_maidan",
+  "name": "Pragati Maidan",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2022
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html",
+  "lat": 28.61724,
+  "lon": 77.24346,
+  "coord_source": "nominatim:Pragati Maidan, Delhi",
+  "coord_note": "Bharat Mandapam, Pragati Maidan Tunnel, Central, Delhi, South East Delhi, Delhi, 110503, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_ip_estate_who",
+  "name": "IP Estate near WHO building",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2022
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html",
+  "lat": 28.62737,
+  "lon": 77.24383,
+  "coord_source": "nominatim:Indraprastha Estate, Delhi",
+  "coord_note": "Indraprastha Estate, Central, Delhi, South East Delhi, Delhi, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_vinod_nagar",
+  "name": "Delhi-Meerut Expressway near Vinod Nagar",
+  "type": "arterial_road",
+  "agency": "UNKNOWN",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2022
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html",
+  "lat": 28.6238,
+  "lon": 77.29838,
+  "coord_source": "nominatim:Vinod Nagar, Delhi",
+  "coord_note": "Vinod Nagar, Shahdara South, Delhi, East Delhi, Delhi, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_jahangirpuri_metro",
+  "name": "Jahangirpuri Metro station",
+  "type": "arterial_road",
+  "agency": "UNKNOWN",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2022
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html",
+  "lat": 28.72565,
+  "lon": 77.16313,
+  "coord_source": "nominatim:Jahangirpuri Metro station, Delhi",
+  "coord_note": "Jahangirpuri Metro Station, Ramgarh road, Jahangir Puri, Civil Lines, Delhi, North Delhi, Delhi, 110033, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_loni_road",
+  "name": "Loni Road roundabout",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2022
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html",
+  "lat": 28.69174,
+  "lon": 77.29195,
+  "coord_source": "nominatim:Loni Road, Delhi",
+  "coord_note": "Loni Road, Balbir Nagar Extension, Shahdara, Babarpur, Shahdara North, Delhi, North East Delhi, Delhi, 110093, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_old_rajinder_nagar",
+  "name": "Old Rajinder Nagar",
+  "type": "colony",
+  "agency": "MCD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2024
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.tribuneindia.com/news/delhi/officers-deployed-at-335-key-spots-to-prevent-waterlogging",
+  "lat": null,
+  "lon": null,
+  "coord_source": "none",
+  "coord_note": "",
+  "needs_check": true
+ },
+ {
+  "id": "hs_ndls",
+  "name": "New Delhi Railway Station area",
+  "type": "arterial_road",
+  "agency": "UNKNOWN",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/india-news/monsoon-rains-continue-in-delhi-causing-waterlogging-in-several-areas-126070900087_1.html",
+  "lat": 28.64028,
+  "lon": 77.22041,
+  "coord_source": "nominatim:New Delhi Railway Station, Delhi",
+  "coord_note": "New Delhi Railway Station, New Delhi, Delhi, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_munirka",
+  "name": "Munirka",
+  "type": "arterial_road",
+  "agency": "UNKNOWN",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "waterlogging",
+  "source": "https://www.business-standard.com/india-news/monsoon-rains-continue-in-delhi-causing-waterlogging-in-several-areas-126070900087_1.html",
+  "lat": 28.55489,
+  "lon": 77.17108,
+  "coord_source": "nominatim:Munirka, Delhi",
+  "coord_note": "Munirka, South, New Delhi, South Delhi, Delhi, 110057, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_mathura_rd_ashram",
+  "name": "Mathura Road near Ashram",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.57242,
+  "lon": 77.2586,
+  "coord_source": "nominatim:Ashram, Delhi",
+  "coord_note": "Ashram, Mathura Road, Friends Colony, Okhla, Central, Delhi, South East Delhi, Delhi, 110065, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_moti_nagar",
+  "name": "Moti Nagar",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.65786,
+  "lon": 77.14243,
+  "coord_source": "nominatim:Moti Nagar, Delhi",
+  "coord_note": "Moti Nagar, Shivaji Marg, Moti Nagar Industrial Area, Punjabi Bagh, Karol Bagh, Delhi, Central Delhi, Delhi, 110015, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_patel_nagar",
+  "name": "Patel Nagar",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.64501,
+  "lon": 77.16928,
+  "coord_source": "nominatim:Patel Nagar, Delhi",
+  "coord_note": "Patel Nagar, Patel Road, South Patel Nagar, Patel Nagar, Karol Bagh, Delhi, Central Delhi, Delhi, 110008, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_naraina",
+  "name": "Naraina",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.62646,
+  "lon": 77.13497,
+  "coord_source": "nominatim:Naraina, Delhi",
+  "coord_note": "Naraina, Karol Bagh, Delhi, Central Delhi, Delhi, 110028, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_aiims",
+  "name": "AIIMS crossing",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.56686,
+  "lon": 77.20781,
+  "coord_source": "nominatim:AIIMS, Delhi",
+  "coord_note": "A.I.I.M.S., Aurobindo Marg, Kidwai Nagar, New Delhi, Delhi, 110029, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_south_ex",
+  "name": "South Extension",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.56857,
+  "lon": 77.22057,
+  "coord_source": "nominatim:South Extension, Delhi",
+  "coord_note": "South Extension, Mahatma Gandhi Marg, South Extension, Central, Delhi, South East Delhi, Delhi, 110049, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_lajpat_nagar",
+  "name": "Lajpat Nagar",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.56609,
+  "lon": 77.24329,
+  "coord_source": "nominatim:Lajpat Nagar, Delhi",
+  "coord_note": "Lajpat Nagar, Central, Delhi, South East Delhi, Delhi, 110065, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_mukarba_chowk",
+  "name": "Mukarba Chowk",
+  "type": "arterial_road",
+  "agency": "PWD",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.73231,
+  "lon": 77.15207,
+  "coord_source": "nominatim:Mukarba Chowk, Delhi",
+  "coord_note": "Mukarba Chowk, Outer Ring Road, Basant Dada Patil Nagar, Bhalswa, Civil Lines, Delhi, North Delhi, Delhi, 110042, India",
+  "needs_check": true
+ },
+ {
+  "id": "hs_dnd_link",
+  "name": "Delhi-Noida Link Road",
+  "type": "arterial_road",
+  "agency": "UNKNOWN",
+  "agency_confidence": "low",
+  "years_seen": 1,
+  "years": [
+   2026
+  ],
+  "evidence": "traffic_disruption",
+  "source": "https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026",
+  "lat": 28.57985,
+  "lon": 77.28378,
+  "coord_source": "nominatim:Delhi-Noida Link Road, Delhi",
+  "coord_note": "Delhi–Meerut RRTS, Mayur Vihar Flyover, Trilok Puri, Mayur Vihar, Shahdara South, Delhi, East Delhi, Delhi, 110091, India",
+  "needs_check": true
+ }
+]

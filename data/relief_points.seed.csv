@@ -1,0 +1,10 @@
+id,name,kind,status,since,cool_room,source
+rp_jama_masjid_cz,Cooling zone near Jama Masjid,cooling,seasonal,2026-05-09,yes,https://test.uniindia.com/delhi-cooling-zone-set-up-to-provide-relief-amid-heat-wave/india/news/3838260.html
+rp_bawana_bamboo,Bamboo cooling shelter Bawana,cooling,seasonal,2026-06-08,yes,https://test.uniindia.com/delhi-sets-up-bamboo-cooling-shelters-as-heatwave-intensifies/india/news/3869816.html
+rp_alipur_bamboo,Bamboo cooling shelter Alipur,cooling,seasonal,2026-06-08,yes,https://test.uniindia.com/delhi-sets-up-bamboo-cooling-shelters-as-heatwave-intensifies/india/news/3869816.html
+rp_outer_north_dc,Cooling shelter outside DC office Outer North,cooling,planned,2026-06-08,yes,https://test.uniindia.com/delhi-sets-up-bamboo-cooling-shelters-as-heatwave-intensifies/india/news/3869816.html
+rp_aiims,AIIMS New Delhi,hospital,open,,unknown,team to verify
+rp_safdarjung,Safdarjung Hospital,hospital,open,,unknown,team to verify
+rp_rml,Dr RML Hospital,hospital,open,,unknown,team to verify
+rp_lnjp,LNJP Hospital,hospital,open,,unknown,team to verify
+rp_gtb,GTB Hospital,hospital,open,,unknown,team to verify

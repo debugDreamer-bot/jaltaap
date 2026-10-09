@@ -1,0 +1,25 @@
+id,name,type,agency_default,years_seen,evidence,source,agency_confidence
+hs_minto_bridge,Minto Bridge underpass,underpass,PWD,2021;2025;2026,waterlogging,https://www.etvbharat.com/english/state/delhi/delhi-pwd-identifies-seven-critical-waterlogging-points/na20210802220845760,low
+hs_pul_prahladpur,Pul Prahladpur underpass,underpass,PWD,2021;2022,waterlogging,https://www.etvbharat.com/english/state/delhi/delhi-pwd-identifies-seven-critical-waterlogging-points/na20210802220845760,low
+hs_azadpur,Azadpur market underpass,underpass,PWD,2022;2025;2026,waterlogging,https://www.theweek.in/wire-updates/national/2025/06/19/des66-dl-pwd-waterlogging.html,low
+hs_zakhira,Zakhira flyover and underpass,underpass,PWD,2022;2026,waterlogging,https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html,low
+hs_ito,ITO,arterial_road,PWD,2025,waterlogging,https://www.theweek.in/wire-updates/national/2025/06/19/des66-dl-pwd-waterlogging.html,low
+hs_dhaula_kuan,Dhaula Kuan,arterial_road,PWD,2026,waterlogging,https://www.newkerala.com/news/a/delhi-pwd-minister-parvesh-sahib-singh-reviews-monsoon-365.htm,low
+hs_moolchand,Moolchand underpass,underpass,PWD,2026,waterlogging,https://www.newkerala.com/news/a/delhi-pwd-minister-parvesh-sahib-singh-reviews-monsoon-365.htm,low
+hs_pragati_maidan,Pragati Maidan,arterial_road,PWD,2022,waterlogging,https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html,low
+hs_ip_estate_who,IP Estate near WHO building,arterial_road,PWD,2022,waterlogging,https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html,low
+hs_vinod_nagar,Delhi-Meerut Expressway near Vinod Nagar,arterial_road,UNKNOWN,2022,waterlogging,https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html,low
+hs_jahangirpuri_metro,Jahangirpuri Metro station,arterial_road,UNKNOWN,2022,waterlogging,https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html,low
+hs_loni_road,Loni Road roundabout,arterial_road,PWD,2022,waterlogging,https://www.business-standard.com/article/current-affairs/traffic-snarls-waterlogging-in-delhi-as-city-receives-first-monsoon-rain-122063000364_1.html,low
+hs_old_rajinder_nagar,Old Rajinder Nagar,colony,MCD,2024,waterlogging,https://www.tribuneindia.com/news/delhi/officers-deployed-at-335-key-spots-to-prevent-waterlogging,low
+hs_ndls,New Delhi Railway Station area,arterial_road,UNKNOWN,2026,waterlogging,https://www.business-standard.com/india-news/monsoon-rains-continue-in-delhi-causing-waterlogging-in-several-areas-126070900087_1.html,low
+hs_munirka,Munirka,arterial_road,UNKNOWN,2026,waterlogging,https://www.business-standard.com/india-news/monsoon-rains-continue-in-delhi-causing-waterlogging-in-several-areas-126070900087_1.html,low
+hs_mathura_rd_ashram,Mathura Road near Ashram,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_moti_nagar,Moti Nagar,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_patel_nagar,Patel Nagar,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_naraina,Naraina,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_aiims,AIIMS crossing,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_south_ex,South Extension,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_lajpat_nagar,Lajpat Nagar,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_mukarba_chowk,Mukarba Chowk,arterial_road,PWD,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low
+hs_dnd_link,Delhi-Noida Link Road,arterial_road,UNKNOWN,2026,traffic_disruption,https://dailypioneer.com/news/slug-lite/heavy-rain-floods-roads-triggers-massive-traffic-jams-across-capital?year=2026,low

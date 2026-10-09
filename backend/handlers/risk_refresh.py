@@ -16,6 +16,7 @@ from risk import grid as gridmod
 from risk import service
 from risk.flood import level_index
 from risk.heat import band_index
+from risk.openmeteo import OpenMeteoError
 
 HOURS = 49              # now to +48 h
 FLOOD_ALERT_RADIUS_M = 3000
@@ -93,7 +94,12 @@ def alert_candidates(result: dict, subscriptions: list[dict]) -> list[dict]:
 @logger.inject_lambda_context(clear_state=True)
 @tracer.capture_lambda_handler
 def handler(event, context):
-    result = compute()
+    try:
+        result = compute()
+    except OpenMeteoError:
+        # keep the last good cache (48 h TTL); the API keeps showing its older data_updated_at
+        logger.exception("forecast unavailable; RiskCache left unchanged this hour")
+        return {"items": 0, "alerts": 0, "error": "forecast unavailable"}
     dynamo.put_risk_items(result["items"])
     alerts = alert_candidates(result, dynamo.all_subscriptions())
     sqs = client("sqs")

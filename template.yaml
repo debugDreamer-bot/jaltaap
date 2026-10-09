@@ -446,6 +446,7 @@ Resources:
       FunctionName: !Sub ${AWS::StackName}-public-api
       Handler: handlers.public_api.handler
       MemorySize: 512
+      Timeout: 25                 # live fallback when RiskCache is empty right after the first deploy
       Events:
         Health: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /health, Method: GET}}
         Heat: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /risk/heat, Method: GET}}

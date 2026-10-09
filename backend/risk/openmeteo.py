@@ -7,6 +7,7 @@ Several points fit in one request as comma-separated latitude and longitude list
 from __future__ import annotations
 
 import time
+from concurrent.futures import ThreadPoolExecutor
 
 import httpx
 
@@ -16,6 +17,7 @@ FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
 HOURLY = "temperature_2m,relative_humidity_2m,apparent_temperature,wet_bulb_temperature_2m,precipitation,precipitation_probability"
 DAILY = "temperature_2m_max,temperature_2m_min,precipitation_sum"
 CACHE_TTL_S = 30 * 60
+CHUNK = 6                      # points per request; large multi-point requests can take 20 s or more
 
 _cache: dict[str, tuple[float, list[dict]]] = {}
 
@@ -25,17 +27,25 @@ class OpenMeteoError(RuntimeError):
 
 
 def _get(params: dict, attempts: int = 3) -> object:
+    """GET with retries. 429 (rate limit) backs off for seconds, honouring Retry-After when sent."""
     last: Exception | None = None
     for i in range(attempts):
         try:
-            r = httpx.get(FORECAST_URL, params=params, timeout=httpx.Timeout(8.0, connect=3.0))
-            if r.status_code == 429 or r.status_code >= 500:
+            r = httpx.get(FORECAST_URL, params=params, timeout=httpx.Timeout(15.0, connect=3.0))
+            if r.status_code == 429:
+                wait = float(r.headers.get("retry-after") or 3 * (2 ** i))
+                last = OpenMeteoError("open-meteo 429 rate limited")
+                if i < attempts - 1:
+                    time.sleep(min(wait, 12))
+                continue
+            if r.status_code >= 500:
                 raise OpenMeteoError(f"open-meteo {r.status_code}")
             r.raise_for_status()
             return r.json()
         except (httpx.HTTPError, OpenMeteoError) as err:
             last = err
-            time.sleep(0.4 * (2 ** i))
+            if i < attempts - 1:
+                time.sleep(0.5 * (2 ** i))
     raise OpenMeteoError(f"open-meteo unavailable: {last}")
 
 
@@ -65,16 +75,20 @@ def fetch_points(points: list[tuple[float, float]], *, forecast_days: int = 3, p
     hit = _cache.get(key)
     if use_cache and hit and time.time() - hit[0] < CACHE_TTL_S:
         return hit[1]
-    params = {
-        "latitude": ",".join(f"{la:.4f}" for la, _ in points),
-        "longitude": ",".join(f"{lo:.4f}" for _, lo in points),
-        "hourly": HOURLY, "daily": DAILY, "timezone": "Asia/Kolkata",
-        "forecast_days": forecast_days, "past_days": past_days,
-    }
-    raw = _get(params)
+    def fetch_chunk(chunk: list[tuple[float, float]]) -> list[dict]:
+        raw = _get({
+            "latitude": ",".join(f"{la:.4f}" for la, _ in chunk),
+            "longitude": ",".join(f"{lo:.4f}" for _, lo in chunk),
+            "hourly": HOURLY, "daily": DAILY, "timezone": "Asia/Kolkata",
+            "forecast_days": forecast_days, "past_days": past_days,
+        })
+        return raw if isinstance(raw, list) else [raw]
+
+    chunks = [points[i:i + CHUNK] for i in range(0, len(points), CHUNK)]
+    with ThreadPoolExecutor(max_workers=min(3, len(chunks))) as pool:   # gentle on the free tier
+        results = list(pool.map(fetch_chunk, chunks))
     fetched_at = iso(now_ist())
-    items = raw if isinstance(raw, list) else [raw]
-    parsed = [_parse(r, fetched_at) for r in items]
+    parsed = [_parse(r, fetched_at) for chunk in results for r in chunk]
     if len(parsed) != len(points):
         raise OpenMeteoError("open-meteo returned a different number of locations")
     _cache[key] = (time.time(), parsed)

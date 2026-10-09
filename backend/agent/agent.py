@@ -87,6 +87,7 @@ def run(ctx: UserContext, user_text: str, history: list[dict]) -> dict:
     return {
         "reply": finalize(reply, ctx, user_text),
         "tools_called": list(ctx.tools_called),
+        "tool_results": list(ctx.tool_results),
         "data_updated_at": ctx.data_updated_at,
         "model_used": model_used,
         "fallback_used": bool(model_used and model_used != s.model_id),

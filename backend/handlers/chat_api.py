@@ -1,6 +1,8 @@
 """ChatApiFn: POST /chat for the public web chat. Must answer in under 25 s."""
 from __future__ import annotations
 
+import hmac
+
 from pydantic import ValidationError
 
 from agent.session import answer
@@ -9,6 +11,7 @@ from common.http import error, json_body, respond, source_ip
 from common.ids import user_hash
 from common.models import ChatRequest
 from common.obs import MetricUnit, logger, metrics, tracer
+from common.secrets import get_secret
 from risk.grid import in_delhi
 
 PER_SESSION_PER_MIN = 8
@@ -37,4 +40,17 @@ def handler(event, context):
         loc = {"lat": req.lat, "lon": req.lon, "label": None}
     out = answer(user_hash=uh, channel="web", lang=lang, text=req.message, last_location=loc)
     metrics.add_metric(name="RepliesOut", unit=MetricUnit.Count, value=1)
-    return respond(200, {"reply": out["reply"], "data_updated_at": out["data_updated_at"]})
+    body = {"reply": out["reply"], "data_updated_at": out["data_updated_at"]}
+    if _is_eval(event):   # evals/run_evals.py needs the tool trace for its grounding checks
+        body["eval"] = {k: out[k] for k in ("tools_called", "tool_results", "model_used", "latency_ms", "error")}
+    return respond(200, body)
+
+
+def _is_eval(event) -> bool:
+    sent = (event.get("headers") or {}).get("x-eval-token")
+    if not sent:
+        return False
+    try:
+        return hmac.compare_digest(sent, get_secret("eval_token"))
+    except Exception:  # noqa: BLE001 - no eval token configured
+        return False

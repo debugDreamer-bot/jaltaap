@@ -107,7 +107,11 @@ def flood_now_for_spots(spots: list[dict], reports: list[dict] | None = None) ->
     """Live flood scores for the current hour (no cache), used when RiskCache is empty."""
     if not spots:
         return [], now_ist().isoformat(timespec="seconds")
-    series_by_cell = grid_series()
+    # fetch only the grid cells these spots snap to (a tool call must stay fast)
+    cell_ids = sorted({gridmod.snap(s["lat"], s["lon"]) for s in spots})
+    by_id = {c["id"]: c for c in gridmod.cells()}
+    data = fetch_points([(by_id[c]["lat"], by_id[c]["lon"]) for c in cell_ids], forecast_days=3, past_days=2)
+    series_by_cell = dict(zip(cell_ids, data))
     start = now_ist()
     out = []
     for spot in spots:

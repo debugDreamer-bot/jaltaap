@@ -1,0 +1,78 @@
+{
+  "backtest": "B: day-ahead skill of the JalTaap base day band at Safdarjung",
+  "label": "modelled data",
+  "period": {
+    "start": "2026-04-01",
+    "end": "2026-07-31",
+    "timezone": "Asia/Kolkata"
+  },
+  "day_window": "06:00-19:59 IST",
+  "predicted": "Open-Meteo Previous Runs API (default best-match model), temperature_2m_previous_day1 and relative_humidity_2m_previous_day1, wet-bulb by Stull",
+  "observed": "Open-Meteo Historical Weather API (reanalysis) base day band from Backtest A (API wet-bulb)",
+  "model_grid": {
+    "lat": 28.576448,
+    "lon": 77.18678
+  },
+  "event": "base day band ORANGE or RED",
+  "scores": {
+    "days": 122,
+    "observed_orange_plus": 43,
+    "predicted_orange_plus": 44,
+    "hits": 35,
+    "misses": 8,
+    "false_alarms": 9,
+    "correct_negatives": 70,
+    "hit_rate": 0.814,
+    "hit_rate_text": "35/43",
+    "false_alarm_ratio": 0.2045,
+    "false_alarm_ratio_text": "9/44",
+    "exact_band_agreement": "96/122",
+    "band_off_by_more_than_one": 1
+  },
+  "scores_observed_with_stull_wet_bulb": {
+    "days": 122,
+    "observed_orange_plus": 43,
+    "predicted_orange_plus": 44,
+    "hits": 35,
+    "misses": 8,
+    "false_alarms": 9,
+    "correct_negatives": 70,
+    "hit_rate": 0.814,
+    "hit_rate_text": "35/43",
+    "false_alarm_ratio": 0.2045,
+    "false_alarm_ratio_text": "9/44",
+    "exact_band_agreement": "96/122",
+    "band_off_by_more_than_one": 1
+  },
+  "humid_missed_days_from_A_caught_day_ahead": {
+    "caught": "8/11",
+    "caught_dates": [
+      "2026-07-04",
+      "2026-07-05",
+      "2026-07-06",
+      "2026-07-11",
+      "2026-07-12",
+      "2026-07-13",
+      "2026-07-26",
+      "2026-07-27"
+    ],
+    "not_caught_dates": [
+      "2026-07-07",
+      "2026-07-19",
+      "2026-07-29"
+    ]
+  },
+  "hours_missing_previous_day1": 0,
+  "days_skipped_incomplete": 0,
+  "check_day0_equals_archive": {
+    "days_where_previous_runs_day0_window_max_equals_archive_window_max": "122/122",
+    "note": "For 2026 the archive's best-match data and the Previous Runs day-0 values come from the same model grid point; if they match, 'observed' is effectively the model's own analysis."
+  },
+  "sentence": "A day ahead, JalTaap's band caught 35 of 43 ORANGE-or-worse days at Safdarjung (Apr-Jul 2026); 9 of 44 ORANGE-or-worse forecasts were false alarms. Modelled data on both sides.",
+  "caveats": [
+    "Both sides are modelled: the forecast is compared with Open-Meteo reanalysis, not IMD station readings. This is forecast consistency, not verified real-world skill.",
+    "Predicted wet-bulb uses Stull from forecast temperature and RH; observed uses Open-Meteo wet_bulb_temperature_2m (scores_observed_with_stull_wet_bulb repeats the comparison with Stull on both sides).",
+    "One grid point, one season (122 days); counts are small and the hit rate has wide uncertainty.",
+    "previous_day1 is, for each hour, the value from the model run about one day earlier (Open-Meteo Previous Runs API); the exact lead time per hour depends on the model's run schedule."
+  ]
+}

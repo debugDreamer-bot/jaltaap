@@ -1,0 +1,19 @@
+{
+  "scenarios": [
+    {
+      "id": "heat-2026-05-22",
+      "label": "Replay: modelled data for 22 May 2026",
+      "kind": "heat"
+    },
+    {
+      "id": "flood-2026-07-09",
+      "label": "Replay: modelled data for 9 July 2026",
+      "kind": "flood"
+    },
+    {
+      "id": "humid-heat-2026-07-13",
+      "label": "Replay: modelled data for 13 July 2026 (humid heat)",
+      "kind": "heat"
+    }
+  ]
+}

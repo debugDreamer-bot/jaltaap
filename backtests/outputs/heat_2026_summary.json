@@ -1,0 +1,212 @@
+{
+  "backtest": "A: humid heat a 40 C rule misses",
+  "data": "Open-Meteo Historical Weather API (modelled reanalysis, not station readings)",
+  "label": "modelled data",
+  "period": {
+    "start": "2026-04-01",
+    "end": "2026-07-31",
+    "timezone": "Asia/Kolkata"
+  },
+  "day_window": "06:00-19:59 IST (hours starting 06:00 to 19:00; risk.yaml day_band_window, same as the engine's day band)",
+  "definitions": {
+    "dry_rule_days": "max temperature in the day window >= 40 C",
+    "jaltaap_orange_plus_days": "JalTaap base (un-escalated) day band ORANGE or RED (wet-bulb >= 28 C or temperature >= 40 C in any window hour)",
+    "missed_days": "max wet-bulb in the day window >= 28 C AND max temperature in the day window < 40 C",
+    "wet_bulb": "Open-Meteo wet_bulb_temperature_2m; Stull (2011) used only where missing. *_stull_check fields recompute with Stull for every hour."
+  },
+  "points": [
+    {
+      "id": "safdarjung",
+      "name": "Safdarjung",
+      "requested_lat": 28.58,
+      "requested_lon": 77.21,
+      "model_grid_lat": 28.576448,
+      "model_grid_lon": 77.18678,
+      "days": 122,
+      "dry_rule_days": 32,
+      "jaltaap_orange_plus_days": 43,
+      "missed_days": 11,
+      "missed_days_stull_check": 11,
+      "jaltaap_orange_plus_days_stull_check": 43,
+      "day_band_counts": {
+        "GREEN": 30,
+        "YELLOW": 49,
+        "ORANGE": 42,
+        "RED": 1
+      },
+      "max_temp_c": 44.4,
+      "max_temp_date": "2026-05-19",
+      "max_wet_bulb_c": 28.9,
+      "max_wet_bulb_date": "2026-07-06",
+      "missed_dates": [
+        "2026-07-04",
+        "2026-07-05",
+        "2026-07-06",
+        "2026-07-07",
+        "2026-07-11",
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-19",
+        "2026-07-26",
+        "2026-07-27",
+        "2026-07-29"
+      ]
+    },
+    {
+      "id": "g_28.8_77.0",
+      "name": "north-west cell g_28.8_77.0",
+      "requested_lat": 28.8,
+      "requested_lon": 77.0,
+      "model_grid_lat": 28.787346,
+      "model_grid_lon": 77.04,
+      "days": 122,
+      "dry_rule_days": 19,
+      "jaltaap_orange_plus_days": 38,
+      "missed_days": 19,
+      "missed_days_stull_check": 19,
+      "jaltaap_orange_plus_days_stull_check": 38,
+      "day_band_counts": {
+        "GREEN": 31,
+        "YELLOW": 53,
+        "ORANGE": 38,
+        "RED": 0
+      },
+      "max_temp_c": 43.2,
+      "max_temp_date": "2026-05-19",
+      "max_wet_bulb_c": 28.8,
+      "max_wet_bulb_date": "2026-06-27",
+      "missed_dates": [
+        "2026-06-27",
+        "2026-06-28",
+        "2026-06-29",
+        "2026-07-04",
+        "2026-07-05",
+        "2026-07-06",
+        "2026-07-07",
+        "2026-07-11",
+        "2026-07-13",
+        "2026-07-14",
+        "2026-07-15",
+        "2026-07-16",
+        "2026-07-17",
+        "2026-07-18",
+        "2026-07-26",
+        "2026-07-27",
+        "2026-07-28",
+        "2026-07-29",
+        "2026-07-30"
+      ]
+    },
+    {
+      "id": "g_28.6_77.3",
+      "name": "east cell g_28.6_77.3",
+      "requested_lat": 28.6,
+      "requested_lon": 77.3,
+      "model_grid_lat": 28.576448,
+      "model_grid_lon": 77.28929,
+      "days": 122,
+      "dry_rule_days": 32,
+      "jaltaap_orange_plus_days": 43,
+      "missed_days": 11,
+      "missed_days_stull_check": 11,
+      "jaltaap_orange_plus_days_stull_check": 43,
+      "day_band_counts": {
+        "GREEN": 33,
+        "YELLOW": 46,
+        "ORANGE": 41,
+        "RED": 2
+      },
+      "max_temp_c": 44.8,
+      "max_temp_date": "2026-05-19",
+      "max_wet_bulb_c": 28.7,
+      "max_wet_bulb_date": "2026-07-04",
+      "missed_dates": [
+        "2026-06-30",
+        "2026-07-04",
+        "2026-07-05",
+        "2026-07-06",
+        "2026-07-07",
+        "2026-07-11",
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-19",
+        "2026-07-26",
+        "2026-07-27"
+      ]
+    },
+    {
+      "id": "g_28.5_77.2",
+      "name": "south cell g_28.5_77.2",
+      "requested_lat": 28.5,
+      "requested_lon": 77.2,
+      "model_grid_lat": 28.50615,
+      "model_grid_lon": 77.20136,
+      "days": 122,
+      "dry_rule_days": 27,
+      "jaltaap_orange_plus_days": 37,
+      "missed_days": 10,
+      "missed_days_stull_check": 10,
+      "jaltaap_orange_plus_days_stull_check": 37,
+      "day_band_counts": {
+        "GREEN": 33,
+        "YELLOW": 52,
+        "ORANGE": 36,
+        "RED": 1
+      },
+      "max_temp_c": 44.0,
+      "max_temp_date": "2026-05-19",
+      "max_wet_bulb_c": 29.1,
+      "max_wet_bulb_date": "2026-07-06",
+      "missed_dates": [
+        "2026-07-04",
+        "2026-07-05",
+        "2026-07-06",
+        "2026-07-11",
+        "2026-07-12",
+        "2026-07-13",
+        "2026-07-19",
+        "2026-07-26",
+        "2026-07-27",
+        "2026-07-29"
+      ]
+    }
+  ],
+  "headline": {
+    "point": "Safdarjung (28.58, 77.21)",
+    "n": 11,
+    "sentence": "11 days in 2026 were dangerous by humidity but never met a 40 C heatwave rule.",
+    "dates": [
+      "2026-07-04",
+      "2026-07-05",
+      "2026-07-06",
+      "2026-07-07",
+      "2026-07-11",
+      "2026-07-12",
+      "2026-07-13",
+      "2026-07-19",
+      "2026-07-26",
+      "2026-07-27",
+      "2026-07-29"
+    ],
+    "qualifier": "Modelled data (Open-Meteo reanalysis grid point near Safdarjung), 1 Apr to 31 Jul 2026, daytime 06:00-19:59 IST."
+  },
+  "humid_heat_date": "2026-07-13",
+  "humid_heat_day": {
+    "date": "2026-07-13",
+    "max_temp_c": 35.8,
+    "full_day_max_temp_c": 35.8,
+    "max_wet_bulb_c": 28.9,
+    "max_wet_bulb_stull_c": 29.0,
+    "day_band": "ORANGE"
+  },
+  "humid_heat_rule": "Safdarjung day (Apr-Jul 2026) with the highest max wet-bulb while max temperature stayed under 40 C all day; ties broken by Stull wet-bulb, then lower temperature",
+  "humid_heat_tied_dates": [
+    "2026-07-06",
+    "2026-07-13"
+  ],
+  "caveats": [
+    "Modelled data: Open-Meteo Historical Weather API is reanalysis on a ~9-25 km grid, not station readings; IMD Safdarjung observations will differ.",
+    "The 40 C rule here is a simplified dry-bulb rule (daily max >= 40 C), not IMD's full heatwave criteria (which also use departure from normal).",
+    "Wet-bulb >= 28 C is JalTaap's ORANGE threshold from risk.yaml, a starting value, not a physiological limit."
+  ]
+}

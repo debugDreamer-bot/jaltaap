@@ -27,7 +27,8 @@ def render(msg: dict, lang: str) -> str:
     p = msg["params"]
     footer = i18n.footer(p["updated_at"], lang)
     if msg["template_key"] == "alert_heat":
-        return i18n.t("alert_heat", lang, area=p.get("area_label") or msg["area"], band=i18n.band_word(p["band"], lang),
+        area = p.get("area_label") or {"en": "your area", "hi": "आपके इलाके", "hinglish": "Aapke ilaake"}[lang]
+        return i18n.t("alert_heat", lang, area=area, band=i18n.band_word(p["band"], lang),
                       avoid=_windows_text(p.get("avoid_windows", []), lang), footer=footer)
     if msg["template_key"] == "alert_flood":
         return i18n.t("alert_flood", lang, spot=p["spot"], level=i18n.level_word(p["level"], lang),

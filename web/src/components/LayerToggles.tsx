@@ -8,6 +8,7 @@ const ITEMS: Array<{ key: keyof LayerVisibility; icon: IconName }> = [
   { key: 'flood', icon: 'waves' },
   { key: 'reports', icon: 'camera' },
   { key: 'relief', icon: 'cooling' },
+  { key: 'water', icon: 'tap' },
 ]
 
 export function LayerToggles({ value, onChange }: { value: LayerVisibility; onChange: (v: LayerVisibility) => void }) {

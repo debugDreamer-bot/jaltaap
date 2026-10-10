@@ -9,7 +9,13 @@
   --color-panel: #ffffff;
   --color-canvas: #f1f3f5;
   --color-focus: #f59f00;
-  --font-sans: system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", sans-serif;
+  --color-night: #06121c;
+  --color-night-2: #0b1f2e;
+  --color-heat: #f76707;
+  --color-heat-soft: #ffe8d6;
+  --color-water: #1c7ed6;
+  --color-water-soft: #dbeefe;
+  --font-sans: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans", "Noto Sans Devanagari", sans-serif;
 }
 
 /* Hindi pages prefer Noto Sans Devanagari (loaded from Google Fonts in index.html). */
@@ -17,6 +23,9 @@
   font-family: "Noto Sans Devanagari", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
 
+/* Base element styles live in the base layer so Tailwind utilities (text colour, font size and
+   weight on links and buttons) always win over them. */
+@layer base {
 html,
 body {
   font-size: 16px;
@@ -56,6 +65,7 @@ a {
 ::placeholder {
   color: #6c757d;
   opacity: 1;
+}
 }
 
 .link {
@@ -174,4 +184,179 @@ input[type="range"].slider {
   height: 44px;
   accent-color: var(--color-brand);
   cursor: pointer;
+}
+
+/* ---------- Motion (every animation is off for prefers-reduced-motion) ---------- */
+@keyframes jt-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(6%, -4%, 0) scale(1.08); }
+  66% { transform: translate3d(-5%, 5%, 0) scale(0.95); }
+}
+@keyframes jt-marquee {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+@keyframes jt-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+@keyframes jt-ring {
+  0% { transform: scale(0.9); opacity: 0.7; }
+  100% { transform: scale(1.6); opacity: 0; }
+}
+@keyframes jt-rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes jt-dot {
+  0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+  40% { opacity: 1; transform: translateY(-3px); }
+}
+.jt-blob { animation: jt-drift 18s ease-in-out infinite; will-change: transform; }
+.jt-marquee { animation: jt-marquee 40s linear infinite; }
+.jt-marquee:hover { animation-play-state: paused; }
+.jt-float { animation: jt-float 5s ease-in-out infinite; }
+.jt-ring::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 4px solid currentColor;
+  animation: jt-ring 1.8s ease-out infinite;
+}
+.jt-rise { animation: jt-rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.jt-dot { animation: jt-dot 1.2s infinite; }
+.jt-dot:nth-child(2) { animation-delay: 0.15s; }
+.jt-dot:nth-child(3) { animation-delay: 0.3s; }
+@media (prefers-reduced-motion: reduce) {
+  .jt-blob, .jt-marquee, .jt-float, .jt-rise, .jt-dot, .jt-ring::after { animation: none !important; }
+  .jt-marquee { transform: none; }
+}
+
+/* ---------- Worker screen (/check): CSS-only motion so it stays light on budget phones ---------- */
+@property --jt-angle { syntax: "<angle>"; initial-value: 0deg; inherits: false; }
+@keyframes jt-sky { from { background-position: 0% 0%; } to { background-position: 100% 100%; } }
+@keyframes jt-spin { to { transform: rotate(360deg); } }
+@keyframes jt-glow { 0%, 100% { transform: scale(1); opacity: 0.85; } 50% { transform: scale(1.12); opacity: 1; } }
+@keyframes jt-haze {
+  0% { transform: translate3d(0, 30px, 0); opacity: 0; }
+  30% { opacity: 0.55; }
+  100% { transform: translate3d(-60px, -90px, 0); opacity: 0; }
+}
+@keyframes jt-ember {
+  0% { transform: translate3d(0, 0, 0) scale(1); opacity: 0; }
+  15% { opacity: 0.9; }
+  100% { transform: translate3d(var(--dx, 20px), -220px, 0) scale(0.3); opacity: 0; }
+}
+@keyframes jt-rain { from { transform: translate3d(0, -40px, 0) rotate(12deg); } to { transform: translate3d(-40px, 360px, 0) rotate(12deg); } }
+@keyframes jt-twinkle { 0%, 100% { opacity: 0.2; } 50% { opacity: 1; } }
+@keyframes jt-word {
+  from { transform: translateY(70%) rotate(3deg); opacity: 0; filter: blur(6px); }
+  to { transform: none; opacity: 1; filter: none; }
+}
+@keyframes jt-pop { from { transform: scale(0.4); opacity: 0; } 70% { transform: scale(1.08); } to { transform: none; opacity: 1; } }
+@keyframes jt-flip { from { transform: rotateX(-75deg) translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes jt-needle { from { transform: rotate(-90deg); } }
+@keyframes jt-wave { from { transform: translateX(0); } to { transform: translateX(-48px); } } /* one wave period in the glass SVG */
+@keyframes jt-fill { from { transform: translateY(100%); } }
+@keyframes jt-draw { from { stroke-dashoffset: var(--len, 300); } to { stroke-dashoffset: 0; } }
+@keyframes jt-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-6px); } }
+@keyframes jt-breathe { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
+@keyframes jt-sway { 0%, 100% { transform: rotate(-8deg); } 50% { transform: rotate(8deg); } }
+@keyframes jt-eq { 0%, 100% { transform: scaleY(0.3); } 50% { transform: scaleY(1); } }
+@keyframes jt-shine { 0% { transform: translateX(-130%) skewX(-20deg); } 55%, 100% { transform: translateX(330%) skewX(-20deg); } }
+@keyframes jt-shake { 0%, 60%, 100% { transform: rotate(0); } 10%, 30%, 50% { transform: rotate(-14deg); } 20%, 40% { transform: rotate(14deg); } }
+@keyframes jt-beat { 0% { box-shadow: 0 0 0 0 rgb(201 42 42 / 0.55); } 100% { box-shadow: 0 0 0 22px rgb(201 42 42 / 0); } }
+@keyframes jt-radar { from { transform: scale(0.6); opacity: 0.7; } to { transform: scale(2.4); opacity: 0; } }
+@keyframes jt-border { to { --jt-angle: 360deg; } }
+@keyframes jt-throb { 0%, 100% { transform: none; } 50% { transform: scale(1.03); } }
+
+.jt-sky { background-size: 220% 220%; animation: jt-sky 14s ease-in-out infinite alternate; }
+.jt-spin { animation: jt-spin 40s linear infinite; }
+.jt-spin-slow { animation: jt-spin 14s linear infinite; }
+.jt-glow { animation: jt-glow 4s ease-in-out infinite; }
+.jt-haze { animation: jt-haze 6s ease-in infinite; }
+.jt-ember { animation: jt-ember 5s ease-out infinite; }
+.jt-raindrop { animation: jt-rain 0.9s linear infinite; }
+.jt-twinkle { animation: jt-twinkle 3s ease-in-out infinite; }
+.jt-word { display: inline-block; animation: jt-word 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.jt-pop { animation: jt-pop 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.jt-bob { animation: jt-bob 3s ease-in-out infinite; }
+.jt-breathe { animation: jt-breathe 2.6s ease-in-out infinite; }
+.jt-sway { animation: jt-sway 2.4s ease-in-out infinite; transform-origin: 50% 90%; }
+.jt-eq { transform-origin: 50% 100%; animation: jt-eq 0.9s ease-in-out infinite; }
+.jt-eq-idle { transform: scaleY(0.45); transform-origin: 50% 100%; }
+.jt-shake { animation: jt-shake 2.2s ease-in-out infinite; }
+.jt-beat { animation: jt-beat 1.6s ease-out infinite; }
+.jt-radar { animation: jt-radar 2.4s ease-out infinite; }
+.jt-throb { animation: jt-throb 2.4s ease-in-out infinite; }
+.jt-wave { animation: jt-wave 2.2s linear infinite; }
+.jt-shine { position: relative; overflow: hidden; isolation: isolate; }
+.jt-shine::after {
+  content: ""; position: absolute; inset: 0 auto 0 0; width: 35%; z-index: -1; pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.35), transparent);
+  animation: jt-shine 3.6s ease-in-out infinite 1s;
+}
+.jt-chip {
+  background: color-mix(in srgb, currentColor 13%, transparent);
+  border: 1px solid color-mix(in srgb, currentColor 22%, transparent);
+  backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+}
+/* animated gradient border (the shift card before it starts) */
+.jt-border {
+  border: 3px solid transparent;
+  background: linear-gradient(#fff, #fff) padding-box,
+    conic-gradient(from var(--jt-angle), #1c7ed6, #f76707, #fcc419, #2f9e44, #1c7ed6) border-box;
+  animation: jt-border 5s linear infinite;
+}
+/* cursor spotlight on cards (desktop); --mx/--my are set on pointer move */
+.jt-spot { position: relative; isolation: isolate; }
+.jt-spot::before {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; z-index: -1; pointer-events: none; opacity: 0; transition: opacity 0.3s;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgb(28 126 214 / 0.12), transparent 70%);
+}
+.jt-spot:hover::before { opacity: 1; }
+/* scroll reveal: children animate once the section is on screen */
+.jt-reveal { opacity: 0; transform: translateY(28px) scale(0.98); transition: opacity 0.7s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.jt-reveal.is-in { opacity: 1; transform: none; }
+.jt-reveal .jt-seg, .jt-reveal .jt-flip, .jt-reveal .jt-fill, .jt-reveal .jt-needle, .jt-reveal .jt-draw { animation-play-state: paused; }
+.jt-reveal.is-in .jt-seg, .jt-reveal.is-in .jt-flip, .jt-reveal.is-in .jt-fill, .jt-reveal.is-in .jt-needle, .jt-reveal.is-in .jt-draw { animation-play-state: running; }
+.jt-seg { transform-box: fill-box; transform-origin: center; animation: jt-pop 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.jt-flip { animation: jt-flip 0.8s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: 50% 0; }
+.jt-fill { animation: jt-fill 1.4s cubic-bezier(0.3, 0.7, 0.2, 1) both; }
+.jt-needle { animation: jt-needle 1.6s cubic-bezier(0.3, 1.4, 0.4, 1) both 0.5s; }
+.jt-draw { stroke-dasharray: var(--len, 300); animation: jt-draw 1.6s ease-out both 0.3s; }
+.jt-dock { transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s; }
+.jt-shimmer { background: linear-gradient(100deg, rgb(206 212 218 / 0.5) 30%, rgb(255 255 255 / 0.9) 50%, rgb(206 212 218 / 0.5) 70%); background-size: 300% 100%; animation: jt-sky 1.4s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .jt-sky, .jt-spin, .jt-spin-slow, .jt-glow, .jt-haze, .jt-ember, .jt-raindrop, .jt-twinkle, .jt-word, .jt-pop, .jt-bob,
+  .jt-breathe, .jt-sway, .jt-eq, .jt-shake, .jt-beat, .jt-radar, .jt-throb, .jt-wave, .jt-shine::after, .jt-border,
+  .jt-seg, .jt-flip, .jt-fill, .jt-needle, .jt-draw, .jt-shimmer { animation: none !important; }
+  .jt-haze, .jt-ember, .jt-raindrop, .jt-radar, .jt-shine::after { display: none; }
+  .jt-reveal { opacity: 1; transform: none; transition: none; }
+  .jt-dock { transition: none; }
+}
+
+/* Soft dotted grid used behind dark sections. */
+.jt-grid-bg {
+  background-image: radial-gradient(rgb(255 255 255 / 0.08) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+.jt-glass {
+  background: rgb(255 255 255 / 0.06);
+  border: 1px solid rgb(255 255 255 / 0.12);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.jt-gradient-text {
+  background: linear-gradient(92deg, #ffb470 0%, #ff8a3d 35%, #74c0fc 75%, #a5d8ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+@media print {
+  header, .print\:hidden { display: none !important; }
+  main { overflow: visible !important; }
 }

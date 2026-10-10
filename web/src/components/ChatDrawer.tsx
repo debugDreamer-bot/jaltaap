@@ -193,6 +193,8 @@ export default function ChatDrawer({ onClose }: { onClose: () => void }) {
     { label: t('chat.quickHeat'), msg: t('chat.quickHeatMsg') },
     { label: t('chat.quickCooling'), msg: t('chat.quickCoolingMsg') },
     { label: t('chat.quickFlood'), msg: t('chat.quickFloodMsg') },
+    { label: t('chat.quickCrew'), msg: t('chat.quickCrewMsg') },
+    { label: t('chat.quickWater'), msg: t('chat.quickWaterMsg') },
   ]
   const busy = pending || photo.step === 'uploading' || photo.step === 'checking'
 

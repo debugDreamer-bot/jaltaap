@@ -6,9 +6,9 @@ import { parseAttribution, type AttribItem } from '../lib/attribution'
 import { ageHours } from '../lib/time'
 import { HEAT_COLORS, FLOOD_COLORS, HEAT_FILL_OPACITY } from '../theme'
 import type { FeatureCollection } from 'geojson'
-import type { PublicReport, ReliefPoint } from '../api/types'
+import type { PublicReport, ReliefPoint, WaterIssue } from '../api/types'
 import { addMapImages } from './images'
-import { heatPopup, hotspotPopup, reliefPopup, reportPopup, type HeatCellInfo, type HotspotInfo } from './popups'
+import { heatPopup, hotspotPopup, reliefPopup, reportPopup, waterIssuePopup, type HeatCellInfo, type HotspotInfo } from './popups'
 
 
 export interface MapCell extends HeatCellInfo {
@@ -28,6 +28,7 @@ export interface MapData {
   hotspots: MapHotspot[]
   reports: PublicReport[]
   relief: ReliefPoint[]
+  water: WaterIssue[]
   hour: string | null
   heatUpdated: string | null
   floodUpdated: string | null
@@ -38,6 +39,13 @@ export interface LayerVisibility {
   flood: boolean
   reports: boolean
   relief: boolean
+  water: boolean
+}
+
+/** Where the camera should go; `key` changes whenever the user picks a place again. */
+export interface MapFocus {
+  bounds: [number, number, number, number]
+  key: string
 }
 
 interface Props {
@@ -47,17 +55,32 @@ interface Props {
   /** Bumped periodically so report pins re-fade without new data. */
   clock: number
   onProvider: (p: 'amazon' | 'openfreemap', attribution: AttribItem[]) => void
+  focus?: MapFocus | null
 }
 
 const LAYERS = {
-  heat: ['heat-fill', 'heat-line', 'heat-icon'],
+  heat: ['heat-fill', 'heat-line', 'heat-icon', 'city-heat'],
   flood: ['flood-circle', 'flood-icon', 'flood-underpass'],
   reports: ['reports-pin'],
   relief: ['relief-icon'],
+  water: ['water-issue'],
 } as const
 
 // Click priority, top-most first.
-const CLICKABLE = ['relief-icon', 'reports-pin', 'flood-circle', 'flood-icon', 'heat-fill']
+const CLICKABLE = ['city-heat', 'water-issue', 'relief-icon', 'reports-pin', 'flood-circle', 'flood-icon', 'heat-fill']
+const BAND_RANK = { GREEN: 0, YELLOW: 1, ORANGE: 2, RED: 3 } as const
+
+/** One marker per city (its worst cell's band) so the heat layer reads at all-India zoom. */
+function citySummary(cells: MapCell[]): Array<{ key: string; city: string; band: MapCell['band']; lon: number; lat: number; worst: MapCell }> {
+  const by = new Map<string, MapCell[]>()
+  for (const c of cells) if (c.city) by.set(c.city, [...(by.get(c.city) ?? []), c])
+  return [...by.entries()].map(([city, cs]) => {
+    const worst = cs.reduce((a, b) => (BAND_RANK[b.band] > BAND_RANK[a.band] ? b : a))
+    const lon = cs.reduce((n, c) => n + (c.bounds[0] + c.bounds[2]) / 2, 0) / cs.length
+    const lat = cs.reduce((n, c) => n + (c.bounds[1] + c.bounds[3]) / 2, 0) / cs.length
+    return { key: `city:${city}`, city, band: worst.band, lon, lat, worst }
+  })
+}
 
 type FC = FeatureCollection
 
@@ -121,11 +144,35 @@ function reliefFC(ps: ReliefPoint[]): FC {
   }
 }
 
+function cityFC(cells: MapCell[]): FC {
+  return {
+    type: 'FeatureCollection',
+    features: citySummary(cells).map((c) => ({
+      type: 'Feature',
+      properties: { key: c.key, band: c.band },
+      geometry: { type: 'Point', coordinates: [c.lon, c.lat] },
+    })),
+  }
+}
+
+function waterFC(ws: WaterIssue[]): FC {
+  return {
+    type: 'FeatureCollection',
+    features: ws
+      .filter((w) => Number.isFinite(w.lat) && Number.isFinite(w.lon))
+      .map((w, i) => ({
+        type: 'Feature',
+        properties: { key: `${w.issue}:${w.lat}:${w.lon}:${i}` },
+        geometry: { type: 'Point', coordinates: [w.lon, w.lat] },
+      })),
+  }
+}
+
 function addLayers(map: MLMap) {
   const src = (id: string) => {
     if (!map.getSource(id)) map.addSource(id, { type: 'geojson', data: empty() })
   }
-  ;['heat', 'heat-centers', 'flood', 'reports', 'relief'].forEach(src)
+  ;['heat', 'heat-centers', 'city-heat', 'flood', 'reports', 'relief', 'water'].forEach(src)
 
   const bandColor = ['match', ['get', 'band'], 'GREEN', HEAT_COLORS.GREEN.fill, 'YELLOW', HEAT_COLORS.YELLOW.fill, 'ORANGE', HEAT_COLORS.ORANGE.fill, 'RED', HEAT_COLORS.RED.fill, '#adb5bd'] as unknown as string
   const levelColor = ['match', ['get', 'level'], 'LOW', FLOOD_COLORS.LOW.fill, 'MEDIUM', FLOOD_COLORS.MEDIUM.fill, 'HIGH', FLOOD_COLORS.HIGH.fill, 'SEVERE', FLOOD_COLORS.SEVERE.fill, 'CONFIRMED', FLOOD_COLORS.CONFIRMED.fill, '#adb5bd'] as unknown as string
@@ -147,6 +194,18 @@ function addLayers(map: MLMap) {
       'icon-ignore-placement': true,
     },
     paint: { 'icon-opacity': 0.9 },
+  })
+  add({
+    id: 'city-heat',
+    type: 'symbol',
+    source: 'city-heat',
+    maxzoom: 8,
+    layout: {
+      'icon-image': ['concat', 'heat-', ['get', 'band']],
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 3.5, 1.1, 8, 1.4],
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+    },
   })
   add({
     id: 'flood-circle',
@@ -191,6 +250,17 @@ function addLayers(map: MLMap) {
     paint: { 'icon-opacity': ['get', 'opacity'] },
   })
   add({
+    id: 'water-issue',
+    type: 'symbol',
+    source: 'water',
+    layout: {
+      'icon-image': 'water-issue',
+      'icon-size': ['interpolate', ['linear'], ['zoom'], 5, 0.7, 12, 1],
+      'icon-allow-overlap': true,
+      'icon-ignore-placement': true,
+    },
+  })
+  add({
     id: 'relief-icon',
     type: 'symbol',
     source: 'relief',
@@ -214,15 +284,17 @@ function apply(map: MLMap, snap: Snapshot) {
   const { fill, centers } = cellsFC(d.cells)
   ;(map.getSource('heat') as GeoJSONSource | undefined)?.setData(fill)
   ;(map.getSource('heat-centers') as GeoJSONSource | undefined)?.setData(centers)
+  ;(map.getSource('city-heat') as GeoJSONSource | undefined)?.setData(cityFC(d.cells))
   ;(map.getSource('flood') as GeoJSONSource | undefined)?.setData(hotspotsFC(d.hotspots))
   ;(map.getSource('reports') as GeoJSONSource | undefined)?.setData(reportsFC(d.reports, now))
   ;(map.getSource('relief') as GeoJSONSource | undefined)?.setData(reliefFC(d.relief))
+  ;(map.getSource('water') as GeoJSONSource | undefined)?.setData(waterFC(d.water))
   for (const [group, ids] of Object.entries(LAYERS) as Array<[keyof LayerVisibility, readonly string[]]>) {
     for (const id of ids) if (map.getLayer(id)) map.setLayoutProperty(id, 'visibility', v[group] ? 'visible' : 'none')
   }
 }
 
-export function RiskMap({ data, visible, lang, clock, onProvider }: Props) {
+export function RiskMap({ data, visible, lang, clock, onProvider, focus }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MLMap | null>(null)
   const readyRef = useRef(false)
@@ -245,7 +317,7 @@ export function RiskMap({ data, visible, lang, clock, onProvider }: Props) {
       style: style.url,
       center: DELHI_CENTER,
       zoom: DELHI_ZOOM,
-      minZoom: 8,
+      minZoom: 3.5, // all of India: the city picker flies between covered cities
       maxZoom: 17,
       attributionControl: false, // attribution is rendered, always visible, below the map
       dragRotate: false,
@@ -288,6 +360,10 @@ export function RiskMap({ data, visible, lang, clock, onProvider }: Props) {
       const { data: d } = latest.current
       const key = f.properties?.key
       switch (f.layer.id) {
+        case 'city-heat': {
+          const c = citySummary(d.cells).find((x) => x.key === key)
+          return c ? heatPopup({ ...c.worst, city: c.city }, d.hour, d.heatUpdated, true) : null
+        }
         case 'heat-fill': {
           const c = d.cells.find((x) => x.id === key)
           return c ? heatPopup(c, d.hour, d.heatUpdated) : null
@@ -304,6 +380,10 @@ export function RiskMap({ data, visible, lang, clock, onProvider }: Props) {
         case 'relief-icon': {
           const p = d.relief.find((x) => x.id === key)
           return p ? reliefPopup(p) : null
+        }
+        case 'water-issue': {
+          const w = d.water.find((x, i) => `${x.issue}:${x.lat}:${x.lon}:${i}` === key)
+          return w ? waterIssuePopup(w) : null
         }
       }
       return null
@@ -349,6 +429,15 @@ export function RiskMap({ data, visible, lang, clock, onProvider }: Props) {
     latest.current = { data, visible, clock }
     if (mapRef.current && readyRef.current) apply(mapRef.current, latest.current)
   }, [data, visible, clock])
+
+  // Fly to a chosen city (or all of India). Reduced motion: jump instead of animating.
+  useEffect(() => {
+    const map = mapRef.current
+    if (!map || !focus) return
+    const [w, s, e, n] = focus.bounds
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    map.fitBounds([[w, s], [e, n]], { padding: 40, maxZoom: 11, duration: still ? 0 : 1200 })
+  }, [focus])
 
   // Popups hold translated text: close them when the language changes.
   useEffect(() => {

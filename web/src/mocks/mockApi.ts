@@ -20,7 +20,13 @@ function delay(ms: number, signal?: AbortSignal) {
   })
 }
 
-export async function handle(method: string, fullPath: string, body: unknown, signal?: AbortSignal): Promise<unknown> {
+/** Role from the mock token ("mock-token:PWD", "mock-token:control_room"); mirrors the Cedar 'view' rule. */
+function canView(token: string | undefined, r: OfficerReport): boolean {
+  const role = (token ?? '').split(':')[1] ?? ''
+  return role === 'control_room' || role === r.agency
+}
+
+export async function handle(method: string, fullPath: string, body: unknown, signal?: AbortSignal, token?: string): Promise<unknown> {
   const url = new URL(fullPath, 'http://mock.local')
   const path = url.pathname
   const qp = (k: string) => url.searchParams.get(k) ?? undefined
@@ -30,6 +36,11 @@ export async function handle(method: string, fullPath: string, body: unknown, si
   if (method === 'GET' && path === '/risk/heat') return fx.heatFor(qp('time'))
   if (method === 'GET' && path === '/risk/flood') return fx.floodFor(qp('time'))
   if (method === 'GET' && path === '/relief') return { points: fx.RELIEF }
+  if (method === 'GET' && path === '/cities') return fx.cities()
+  if (method === 'GET' && path === '/water-issues') return fx.waterIssues()
+  if (method === 'GET' && path === '/crew') return fx.crew(url.searchParams)
+  if (method === 'GET' && path === '/now') return fx.nowFor(url.searchParams)
+  if (method === 'GET' && path === '/officer/agencies') return { agencies: ['BMC', 'BWSSB', 'CMWSSB', 'DJB', 'GHMC', 'MCD', 'NDMC', 'PWD'] }
   if (method === 'GET' && path === '/reports') {
     const status = qp('status')
     return { reports: fx.publicReports(photoUrl()).filter((r) => !status || r.status === status) }
@@ -68,15 +79,22 @@ export async function handle(method: string, fullPath: string, body: unknown, si
   if (method === 'GET' && path === '/officer/reports') {
     officer ??= fx.officerReports(photoUrl())
     const status = qp('status')
-    return { reports: officer.filter((r) => !status || r.status === status) }
+    return { reports: officer.filter((r) => canView(token, r) && (!status || r.status === status)) }
   }
   m = path.match(/^\/reports\/([^/]+)$/)
   if (method === 'PATCH' && m) {
     officer ??= fx.officerReports(photoUrl())
     const i = officer.findIndex((r) => r.id === m![1])
     if (i < 0) throw new ApiError('not found', 404)
-    officer[i] = { ...officer[i], status: (body as { status: string }).status }
-    return officer[i]
+    if (!canView(token, officer[i]) || (token ?? '').endsWith(':control_room')) throw new ApiError('forbidden', 403)
+    const b = body as { status?: string; agency?: string }
+    // Mirrors the Cedar policy: resolving needs evidence; reassigning needs another agency.
+    if (b.status === 'resolved' && !['verified', 'confirmed', 'corroborated'].includes(officer[i].status)) throw new ApiError('forbidden', 403)
+    if (b.agency) {
+      if (b.agency === officer[i].agency) throw new ApiError('forbidden', 403)
+      officer[i] = { ...officer[i], agency: b.agency, reassigned_from: officer[i].agency }
+    } else officer[i] = { ...officer[i], status: b.status ?? officer[i].status }
+    return { report: officer[i] }
   }
   m = path.match(/^\/briefs\/([^/]+)$/)
   if (method === 'GET' && m) return fx.brief(decodeURIComponent(m[1]))

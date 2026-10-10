@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { useTranslation } from 'react-i18next'
 import { FLOOD_ICON, HEAT_ICON } from '../lib/icons'
-import { FLOOD_COLORS, FLOOD_LEVELS, HEAT_BANDS, HEAT_COLORS, RELIEF_COLORS, REPORT_COLOR } from '../theme'
+import { FLOOD_COLORS, FLOOD_LEVELS, HEAT_BANDS, HEAT_COLORS, RELIEF_COLORS, REPORT_COLOR, WATER_ISSUE_COLOR } from '../theme'
 import { Icon } from './Icon'
 import { Swatch } from './RiskBadge'
 
@@ -25,6 +25,7 @@ export function Legend() {
           </Row>
         ))}
       </ul>
+      <p className="text-muted">{t('legend.cellRain')}</p>
       <h3 className="mt-3 font-semibold text-muted">{t('legend.floodTitle')}</h3>
       <ul>
         {FLOOD_LEVELS.map((l) => (
@@ -52,6 +53,10 @@ export function Legend() {
         <Row>
           <Swatch fill={REPORT_COLOR.fill} ink={REPORT_COLOR.ink} icon="camera" />
           <span>{t('legend.report')}</span>
+        </Row>
+        <Row>
+          <Swatch fill={WATER_ISSUE_COLOR.fill} ink={WATER_ISSUE_COLOR.ink} icon="tap" />
+          <span>{t('legend.waterIssue')}</span>
         </Row>
         {(['cooling', 'water', 'hospital'] as const).map((k) => (
           <Row key={k}>

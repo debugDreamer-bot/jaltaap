@@ -1,8 +1,8 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getFlood, getHeat, getRelief, getReplay, getReports, listReplays } from '../api/endpoints'
+import { getCities, getFlood, getHeat, getRelief, getReplay, getReports, getWaterIssues, listReplays } from '../api/endpoints'
 import { isAbort } from '../api/client'
-import type { FloodResponse, HeatResponse, PublicReport, ReliefPoint, ReplayScenario, ScenarioSummary } from '../api/types'
+import type { City, FloodResponse, HeatResponse, PublicReport, ReliefPoint, ReplayScenario, ScenarioSummary, WaterIssue } from '../api/types'
 import { Attribution } from '../components/Attribution'
 import { PROVIDER_FALLBACK, type AttribItem } from '../lib/attribution'
 import { Icon } from '../components/Icon'
@@ -10,11 +10,13 @@ import { LayerToggles } from '../components/LayerToggles'
 import { Legend } from '../components/Legend'
 import { USE_MOCK, config } from '../config'
 import { currentLang } from '../i18n'
+import { readStore, writeStore } from '../lib/storage'
 import { formatHour, hoursBetween, istIsoHoursAgo } from '../lib/time'
-import { RiskMap, type LayerVisibility, type MapCell, type MapData, type MapHotspot } from '../map/RiskMap'
+import { RiskMap, type LayerVisibility, type MapCell, type MapData, type MapFocus, type MapHotspot } from '../map/RiskMap'
 import { isFloodLevel, isHeatBand } from '../theme'
 
 const ChatDrawer = lazy(() => import('../components/ChatDrawer'))
+const CityDashboard = lazy(() => import('../components/CityDashboard').then((m) => ({ default: m.CityDashboard })))
 
 type Load<T> = { state: 'idle' | 'loading' } | { state: 'ok'; value: T } | { state: 'error' }
 
@@ -23,6 +25,10 @@ const REPLAY_STEP_MS = 1000
 const PREFERRED_ORDER = ['heat-2026-05-22', 'flood-2026-07-09']
 
 const apiReady = USE_MOCK || Boolean(config.apiUrl)
+const INDIA_BOUNDS: [number, number, number, number] = [68.1, 6.5, 97.4, 37.1]
+const CITY_KEY = 'jaltaap.city'
+
+const savedCity = (): string => readStore(CITY_KEY) || 'delhi'
 
 function sortScenarios(list: ScenarioSummary[]): ScenarioSummary[] {
   const rank = (s: ScenarioSummary) => {
@@ -52,11 +58,21 @@ function liveHotspots(f: FloodResponse | null): MapHotspot[] {
     }))
 }
 
-function liveCells(h: HeatResponse | null): MapCell[] {
+function liveCells(h: HeatResponse | null, cityName: (id?: string) => string | null): MapCell[] {
   if (!h) return []
   return h.cells
     .filter((c) => isHeatBand(c.band) && Array.isArray(c.bounds) && c.bounds.length === 4)
-    .map((c) => ({ id: c.id, bounds: c.bounds, band: c.band, temp_c: c.temp_c ?? null, rh: c.rh ?? null, wet_bulb_c: c.wet_bulb_c ?? null }))
+    .map((c) => ({
+      id: c.id,
+      bounds: c.bounds,
+      band: c.band,
+      temp_c: c.temp_c ?? null,
+      rh: c.rh ?? null,
+      wet_bulb_c: c.wet_bulb_c ?? null,
+      city: cityName(c.city),
+      rain_3h_mm: c.rain_next_3h_mm,
+      area_level: isFloodLevel(c.area_flood_level) ? c.area_flood_level : null,
+    }))
 }
 
 function replayFrame(r: ReplayScenario, idx: number): { cells: MapCell[]; hotspots: MapHotspot[]; hour: string | null } {
@@ -80,7 +96,11 @@ export default function MapPage() {
   const { t } = useTranslation()
   const lang = currentLang()
 
-  const [visible, setVisible] = useState<LayerVisibility>({ heat: true, flood: true, reports: true, relief: false })
+  const [visible, setVisible] = useState<LayerVisibility>({ heat: true, flood: true, reports: true, relief: false, water: true })
+  const [cities, setCities] = useState<City[]>([])
+  const [cityId, setCityId] = useState<string>(savedCity)
+  const [focus, setFocus] = useState<MapFocus | null>(null)
+  const [water, setWater] = useState<Load<WaterIssue[]>>({ state: 'idle' })
   const [panelOpen, setPanelOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
   const [provider, setProvider] = useState<{ name: 'amazon' | 'openfreemap'; items: AttribItem[] }>(() => {
@@ -190,6 +210,13 @@ export default function MapPage() {
       for (const r of ok) for (const rep of r.value.reports ?? []) if (Number.isFinite(rep.lat) && Number.isFinite(rep.lon)) byId.set(rep.id, rep)
       setReports({ state: 'ok', value: [...byId.values()] })
     })
+    getCities(ctrl.signal)
+      .then((r) => setCities(r.cities ?? []))
+      .catch(() => setCities([]))
+    setWater({ state: 'loading' })
+    getWaterIssues(ctrl.signal)
+      .then((r) => setWater({ state: 'ok', value: r.issues ?? [] }))
+      .catch((e) => !isAbort(e) && setWater({ state: 'error' }))
     setRelief({ state: 'loading' })
     getRelief(ctrl.signal)
       .then((r) => setRelief({ state: 'ok', value: r.points ?? [] }))
@@ -237,25 +264,60 @@ export default function MapPage() {
 
   const inReplay = Boolean(replayId)
 
+  // City picker: fly to the city (or all of India) and remember the choice on this device.
+  const pickCity = useCallback(
+    (id: string) => {
+      setCityId(id)
+      writeStore(CITY_KEY, id)
+      const c = cities.find((x) => x.id === id)
+      setFocus({ bounds: c ? c.bounds : INDIA_BOUNDS, key: `${id}:${Date.now()}` })
+    },
+    [cities],
+  )
+  // Once cities load, go to the remembered city (Delhi by default needs no move).
+  const firstFocus = useRef(false)
+  useEffect(() => {
+    if (firstFocus.current || !cities.length) return
+    firstFocus.current = true
+    if (cityId !== 'delhi') {
+      const c = cities.find((x) => x.id === cityId)
+      setFocus({ bounds: c ? c.bounds : INDIA_BOUNDS, key: `init:${cityId}` })
+    }
+  }, [cities, cityId])
+  // Replays are Delhi data: bring the camera back to Delhi when one starts.
+  useEffect(() => {
+    if (!replayId) return
+    const d = cities.find((x) => x.id === 'delhi')
+    if (d) setFocus({ bounds: d.bounds, key: `replay:${replayId}` })
+  }, [replayId, cities])
+  const cityName = useCallback(
+    (id?: string) => {
+      const c = id ? cities.find((x) => x.id === id) : undefined
+      return c ? (lang === 'hi' ? c.name_hi : c.name) : null
+    },
+    [cities, lang],
+  )
+
   const mapData: MapData = useMemo(() => {
     const reliefPts = relief.state === 'ok' ? relief.value : []
     if (inReplay) {
-      if (replay.state !== 'ok') return { cells: [], hotspots: [], reports: [], relief: reliefPts, hour: null, heatUpdated: null, floodUpdated: null }
+      if (replay.state !== 'ok') return { cells: [], hotspots: [], reports: [], relief: reliefPts, water: [], hour: null, heatUpdated: null, floodUpdated: null }
       const f = replayFrame(replay.value, replayIdx)
-      return { ...f, reports: [], relief: reliefPts, heatUpdated: null, floodUpdated: null }
+      return { ...f, reports: [], relief: reliefPts, water: [], heatUpdated: null, floodUpdated: null }
     }
     const h = heat.state === 'ok' ? heat.value : null
     const fl = flood.state === 'ok' ? flood.value : null
     return {
-      cells: liveCells(h),
+      cells: liveCells(h, cityName),
       hotspots: liveHotspots(fl),
       reports: reports.state === 'ok' ? reports.value : [],
       relief: reliefPts,
+      water: water.state === 'ok' ? water.value : [],
       hour: h?.time ?? fl?.time ?? null,
       heatUpdated: h?.data_updated_at ?? null,
       floodUpdated: fl?.data_updated_at ?? null,
     }
-  }, [inReplay, replay, replayIdx, heat, flood, reports, relief])
+  }, [inReplay, replay, replayIdx, heat, flood, reports, relief, water, cityName])
 
   const onProvider = useCallback((name: 'amazon' | 'openfreemap', items: AttribItem[]) => {
     setProvider({ name, items: items.length ? items : PROVIDER_FALLBACK[name] })
@@ -264,6 +326,48 @@ export default function MapPage() {
   const replayLabel = replay.state === 'ok' ? replay.value.label : (scenarios.state === 'ok' && scenarios.value.find((s) => s.id === replayId)?.label) || ''
 
   // ---------- panel pieces ----------
+  const currentCity = cities.find((c) => c.id === cityId)
+  const cityPicker = (
+    <div>
+      <label htmlFor="city-select" className="mb-1 flex items-center gap-2 text-lg font-bold">
+        <Icon name="city" size={20} />
+        {t('city.title')}
+      </label>
+      <select
+        id="city-select"
+        className="w-full rounded-lg border-2 border-line bg-white px-3 py-2"
+        value={cities.some((c) => c.id === cityId) || cityId === 'india' ? cityId : 'delhi'}
+        onChange={(e) => pickCity(e.target.value)}
+        disabled={!cities.length || inReplay}
+      >
+        <option value="india">{t('city.allIndia')}</option>
+        {(['full', 'heat_and_rain', 'city'] as const).map((tier) => {
+          const group = cities.filter((c) => c.tier === tier).sort((a, b) => (tier === 'city' ? a.name.localeCompare(b.name) : 0))
+          return group.length ? (
+            <optgroup key={tier} label={t(`city.group.${tier}`)}>
+              {group.map((c) => (
+                <option key={c.id} value={c.id}>
+                  {lang === 'hi' ? `${c.name_hi} (${c.name})` : c.name}
+                </option>
+              ))}
+            </optgroup>
+          ) : null
+        })}
+      </select>
+      <p className="mt-1 text-muted">
+        {cityId === 'india'
+          ? t('city.noteIndia')
+          : currentCity?.tier === 'full'
+            ? t('city.noteFull')
+            : currentCity
+              ? currentCity.agencies.civic === currentCity.agencies.water
+                ? t('city.notePartialOne', { body: currentCity.agency_names[currentCity.agencies.civic] ?? currentCity.agencies.civic })
+                : t('city.notePartial', { civic: currentCity.agency_names[currentCity.agencies.civic] ?? currentCity.agencies.civic, water: currentCity.agency_names[currentCity.agencies.water] ?? currentCity.agencies.water })
+              : null}
+      </p>
+    </div>
+  )
+
   const replayPicker = (
     <div>
       <label htmlFor="replay-select" className="mb-1 block text-lg font-bold">
@@ -365,6 +469,7 @@ export default function MapPage() {
       {flood.state === 'error' && <p className="font-semibold text-ink">{t('data.floodUnavailable')}</p>}
       {reports.state === 'error' && visible.reports && <p className="font-semibold text-ink">{t('data.reportsUnavailable')}</p>}
       {relief.state === 'error' && visible.relief && <p className="font-semibold text-ink">{t('data.reliefUnavailable')}</p>}
+      {water.state === 'error' && visible.water && <p className="font-semibold text-ink">{t('data.waterUnavailable')}</p>}
       {mapData.heatUpdated && mapData.heatUpdated === mapData.floodUpdated ? (
         <p>{t('data.updated', { time: formatHour(mapData.heatUpdated, lang) })}</p>
       ) : (
@@ -404,7 +509,7 @@ export default function MapPage() {
     <div className="flex h-full flex-col lg:flex-row">
       {/* Map */}
       <div className="relative min-h-0 flex-1 lg:order-2">
-        <RiskMap data={mapData} visible={visible} lang={lang} clock={clock} onProvider={onProvider} />
+        <RiskMap data={mapData} visible={visible} lang={lang} clock={clock} onProvider={onProvider} focus={focus} />
         {inReplay && (
           <div
             role="status"
@@ -430,6 +535,20 @@ export default function MapPage() {
         <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 pt-3 pb-2">
           {statusLines}
           {inReplay ? replayTime : liveTime}
+          {cityPicker}
+          {currentCity && !inReplay && (
+            <details className="group rounded-2xl border border-line bg-canvas p-3" open>
+              <summary className="flex cursor-pointer list-none items-center justify-between font-bold [&::-webkit-details-marker]:hidden">
+                {t('dash.cityNow', { city: lang === 'hi' ? currentCity.name_hi : currentCity.name })}
+                <Icon name="chevron-down" size={20} className="transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="mt-3">
+                <Suspense fallback={<div className="h-40 animate-pulse rounded-2xl bg-line/50" />}>
+                  <CityDashboard key={currentCity.id} lat={currentCity.lat} lon={currentCity.lon} label={currentCity.name} compact />
+                </Suspense>
+              </div>
+            </details>
+          )}
           <div className="flex gap-2 lg:hidden">
             <button
               type="button"

@@ -4,7 +4,7 @@ import i18n from '../i18n'
 import { FLOOD_ICON, HEAT_ICON, ICONS, type IconName } from '../lib/icons'
 import { formatDateTime, formatHour } from '../lib/time'
 import { FLOOD_COLORS, HEAT_COLORS, isFloodLevel, isHeatBand, type FloodLevel, type HeatBand } from '../theme'
-import type { PublicReport, ReliefPoint } from '../api/types'
+import type { PublicReport, ReliefPoint, WaterIssue } from '../api/types'
 
 const t = (k: string, o?: Record<string, unknown>) => i18n.t(k, o)
 const lang = () => (i18n.language === 'hi' ? 'hi' : 'en')
@@ -65,22 +65,28 @@ export interface HeatCellInfo {
   temp_c: number | null
   rh: number | null
   wet_bulb_c: number | null
+  /** City name for the pan-India grid (absent in replays). */
+  city?: string | null
+  rain_3h_mm?: number | null
+  area_level?: FloodLevel | null
 }
 
-export function heatPopup(c: HeatCellInfo, hour: string | null, updated: string | null): HTMLElement {
+export function heatPopup(c: HeatCellInfo, hour: string | null, updated: string | null, citySummary = false): HTMLElement {
   const root = el('div')
-  root.appendChild(el('div', 'popup-title', t('popup.heatCell')))
+  if (citySummary) root.appendChild(el('div', 'popup-meta', t('popup.cityWorst')))
+  root.appendChild(el('div', 'popup-title', c.city ? t('popup.heatCellIn', { city: c.city }) : t('popup.heatCell')))
   if (isHeatBand(c.band)) {
     const col = HEAT_COLORS[c.band]
     root.appendChild(badge(col.fill, col.ink, HEAT_ICON[c.band], t(`bands.${c.band}`)))
   }
-  root.appendChild(
-    rows([
-      [t('popup.temp'), num(c.temp_c, '°C')],
-      [t('popup.rh'), num(c.rh, '%', 0)],
-      [t('popup.wetBulb'), num(c.wet_bulb_c, '°C')],
-    ]),
-  )
+  const pairs: Array<[string, string | null | undefined]> = [
+    [t('popup.temp'), num(c.temp_c, '°C')],
+    [t('popup.rh'), num(c.rh, '%', 0)],
+    [t('popup.wetBulb'), num(c.wet_bulb_c, '°C')],
+  ]
+  if (c.rain_3h_mm !== undefined) pairs.push([t('popup.rain3h'), num(c.rain_3h_mm, 'mm')])
+  if (c.area_level && isFloodLevel(c.area_level)) pairs.push([t('popup.areaRain'), t(`levels.${c.area_level}`)])
+  root.appendChild(rows(pairs))
   const m = meta(hour, updated)
   if (m) root.appendChild(m)
   return root
@@ -156,7 +162,7 @@ export function reportPopup(r: PublicReport): HTMLElement {
 
 export function reliefPopup(p: ReliefPoint): HTMLElement {
   const root = el('div')
-  root.appendChild(el('div', 'popup-title', p.name))
+  root.appendChild(el('div', 'popup-title', lang() === 'hi' && p.name_hi ? p.name_hi : p.name))
   const kindKey = `popup.kind.${p.kind}`
   const k = el('div', 'popup-badge')
   k.append(icon(p.kind === 'water' ? 'water' : p.kind === 'hospital' ? 'hospital' : 'cooling', 22), el('span', '', i18n.exists(kindKey) ? t(kindKey) : p.kind))
@@ -174,5 +180,24 @@ export function reliefPopup(p: ReliefPoint): HTMLElement {
     wrap.appendChild(a)
     root.appendChild(wrap)
   }
+  return root
+}
+
+export function waterIssuePopup(w: WaterIssue): HTMLElement {
+  const root = el('div')
+  const kindKey = `water.issue.${w.issue}`
+  root.appendChild(el('div', 'popup-title', i18n.exists(kindKey) ? t(kindKey) : String(w.issue)))
+  const k = el('div', 'popup-badge')
+  k.append(icon('tap', 22), el('span', '', statusWord(w.status)))
+  root.appendChild(k)
+  root.appendChild(
+    rows([
+      [t('water.reports'), String(w.reports)],
+      [t('water.photoVerified'), String(w.photo_verified)],
+      [t('popup.agency'), w.agency || null],
+      [t('water.latest'), formatDateTime(w.latest, lang()) || null],
+    ]),
+  )
+  root.appendChild(el('div', 'popup-meta', t('water.privacy')))
   return root
 }

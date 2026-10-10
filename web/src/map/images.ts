@@ -2,7 +2,7 @@
 // all use the same icons. Rendered at 2x for sharp display.
 import type { Map as MLMap } from 'maplibre-gl'
 import { FLOOD_ICON, HEAT_ICON, ICONS, type IconName } from '../lib/icons'
-import { FLOOD_COLORS, FLOOD_LEVELS, HEAT_BANDS, HEAT_COLORS, RELIEF_COLORS, REPORT_COLOR } from '../theme'
+import { FLOOD_COLORS, FLOOD_LEVELS, HEAT_BANDS, HEAT_COLORS, RELIEF_COLORS, REPORT_COLOR, WATER_ISSUE_COLOR } from '../theme'
 
 const PR = 2
 
@@ -51,6 +51,12 @@ function specs(): Spec[] {
       38,
       `<path d="M15 37C15 37 2 23.5 2 14.5a13 13 0 0126 0C28 23.5 15 37 15 37z" fill="${REPORT_COLOR.fill}" stroke="#ffffff" stroke-width="2"/>${glyph('camera', REPORT_COLOR.ink, 7, 6.5, 16)}`,
     ),
+  })
+  out.push({
+    id: 'water-issue',
+    w: 28,
+    h: 28,
+    svg: wrap(28, 28, `<rect x="1.5" y="1.5" width="25" height="25" rx="6" fill="${WATER_ISSUE_COLOR.fill}" stroke="#ffffff" stroke-width="2"/>${glyph('tap', WATER_ISSUE_COLOR.ink, 5, 5, 18)}`),
   })
   for (const kind of ['cooling', 'water', 'hospital'] as const) {
     const c = RELIEF_COLORS[kind]

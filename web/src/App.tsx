@@ -5,11 +5,16 @@ import { MockBanner } from './components/MockBanner'
 import { usePath } from './lib/nav'
 import { Link } from './router'
 
-// Each page is its own chunk: /about and /officer never download MapLibre up front, and
+// Each page is its own chunk: only /map downloads MapLibre, only / downloads the animation library,
+// /check stays light for budget phones, and
 // aws-amplify only ever loads with the officer page.
+const LandingPage = lazy(() => import('./pages/LandingPage'))
+const CheckPage = lazy(() => import('./pages/CheckPage'))
 const MapPage = lazy(() => import('./pages/MapPage'))
 const AboutPage = lazy(() => import('./pages/AboutPage'))
 const OfficerPage = lazy(() => import('./pages/officer/OfficerPage'))
+const CrewPage = lazy(() => import('./pages/CrewPage'))
+const UnwellPage = lazy(() => import('./pages/UnwellPage'))
 
 function Loading() {
   const { t } = useTranslation()
@@ -35,16 +40,20 @@ function NotFound() {
 export default function App() {
   const path = usePath()
   let page
-  if (path === '/') page = <MapPage />
+  if (path === '/') page = <LandingPage />
+  else if (path === '/check') page = <CheckPage />
+  else if (path === '/map') page = <MapPage />
   else if (path === '/about') page = <AboutPage />
   else if (path === '/officer') page = <OfficerPage />
+  else if (path === '/crew') page = <CrewPage />
+  else if (path === '/unwell') page = <UnwellPage />
   else page = <NotFound />
 
   return (
     <div className="flex h-full flex-col">
       <MockBanner />
       <Header path={path} />
-      <main id="main" className={`relative min-h-0 flex-1 ${path === '/' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+      <main id="main" className={`relative min-h-0 flex-1 ${path === '/map' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
         <Suspense fallback={<Loading />}>{page}</Suspense>
       </main>
     </div>

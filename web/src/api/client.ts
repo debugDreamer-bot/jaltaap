@@ -24,7 +24,7 @@ export async function api<T>(path: string, opts: RequestOptions = {}): Promise<T
   // Inline env check (not the USE_MOCK constant) so the bundler can drop the mock chunk.
   if (import.meta.env.VITE_USE_MOCK === 'true') {
     const mock = await import('../mocks/mockApi')
-    return mock.handle(method, path, opts.body, opts.signal) as Promise<T>
+    return mock.handle(method, path, opts.body, opts.signal, opts.token) as Promise<T>
   }
   if (!config.apiUrl) throw new ApiError('API URL is not configured', 0)
 

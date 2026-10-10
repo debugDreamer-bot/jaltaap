@@ -34,7 +34,8 @@ export const OPENFREEMAP_STYLE = 'https://tiles.openfreemap.org/styles/liberty'
 export function mapStyleUrl(): { url: string; provider: 'amazon' | 'openfreemap' } {
   if (config.mapKey) {
     return {
-      url: `https://maps.geo.${config.region}.amazonaws.com/v2/styles/Standard/descriptor?key=${encodeURIComponent(config.mapKey)}&color-scheme=Light`,
+      // political-view=IND: borders as officially shown in India (matters at the all-India zoom)
+      url: `https://maps.geo.${config.region}.amazonaws.com/v2/styles/Standard/descriptor?key=${encodeURIComponent(config.mapKey)}&color-scheme=Light&political-view=IND`,
       provider: 'amazon',
     }
   }

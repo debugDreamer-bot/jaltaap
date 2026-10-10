@@ -1,6 +1,6 @@
 # JalTaap web
 
-Public risk map, "Try JalTaap" web chat, `/about` page and the officer view for JalTaap.
+Landing page, the worker "Check my area" screen, public risk map, "Try JalTaap" web chat, crew plan, `/about` page and the officer view for JalTaap.
 React + Vite + TypeScript, MapLibre GL JS, Tailwind CSS, i18next (Hindi and English) and
 aws-amplify (Auth only, officer route only). Built strictly against
 [`docs/api-contract.md`](../docs/api-contract.md).
@@ -67,16 +67,29 @@ fails to load. The Amazon key must allow the `maps` resource for this site's ref
 
 ## Pages
 
-- `/` full-screen map. Layers: Heat (36 squares, band colour at 0.45 opacity plus a band icon
+- `/map` full-screen map. Layers: Heat (36 squares, band colour at 0.45 opacity plus a band icon
   at each centre), Waterlogging (circles sized by risk, coloured by level, level icon inside,
   underpass badge), Reports (pins, faded after 3 h unless `confirmed`), Relief (cooling, water,
   hospital icons). Time slider over `hours_available` (GET /risk/heat?time= and
   GET /risk/flood?time= for the same hour). Replay picker from GET /replay with play/pause and
   scrubbing; the replay `label` stays visible as a banner. Legend, "Data updated" times, and the
   "Try JalTaap" chat drawer (lazy chunk).
+- `/` landing page (its own chunk with `motion`): live city heat marquee, an animated example
+  WhatsApp chat, count-up numbers, feature cards, a live 48-hour city dashboard from `GET /now`,
+  a scroll-linked "how it works", the multi-city backtest, the Cedar policy and FAQ. Every
+  animation honours prefers-reduced-motion.
+- `/check` the worker view, built for people who read slowly or not at all: one giant colour +
+  icon + few-word answer, picture cards (heavy-work hours bar, glasses of water, mask, sun, rain,
+  nearest cool place), a Listen button that reads it aloud in Hindi with the phone's own
+  text-to-speech, a huge Call 112 button and Send on WhatsApp. No animation library: about 4 KB.
+- `/map` the risk map (was `/`), now with a live city dashboard (AQI estimate, UV, rain, the next
+  48 hours) under the city picker.
+- `/crew` printable crew heat plan.
 - `/about` the problem in three cited numbers, how risk is computed, data sources and licences,
   limitations, team, optional repo/video links, and backtest results read from
   `public/backtests.json` when present (shape below). Nothing is shown for it otherwise.
+- `/officer` locally, without Cognito: run `scripts/dev_api.py` and `npm run dev` with
+  `VITE_API_URL`; the sign-in page lists demo accounts (development builds only).
 - `/officer` lazy chunk with aws-amplify. Cognito sign-in (handles the new-password challenge),
   agency from the ID token claim `custom:agency`, report queue (GET /officer/reports) with photo,
   depth, time and a small map, Confirmed / Resolved / False (PATCH /reports/{id}), and the
@@ -129,6 +142,7 @@ only), chat drawer 3.7 KB, `/about` 2 KB, officer page with aws-amplify 41 KB. R
 | react, react-dom | MIT |
 | maplibre-gl | BSD-3-Clause |
 | i18next, react-i18next | MIT |
+| motion (animations on the landing page only) | MIT |
 | aws-amplify | Apache-2.0 |
 | vite, @vitejs/plugin-react | MIT |
 | tailwindcss, @tailwindcss/vite | MIT |

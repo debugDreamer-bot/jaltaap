@@ -1,0 +1,1971 @@
+[
+  {
+    "id": "delhi",
+    "name": "Delhi",
+    "name_hi": "दिल्ली",
+    "state": "Delhi",
+    "lat": 28.6214,
+    "lon": 77.2148,
+    "population": 317797,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        28.4,
+        28.5,
+        28.6,
+        28.7,
+        28.8,
+        28.9
+      ],
+      "lons": [
+        76.8,
+        76.9,
+        77.0,
+        77.1,
+        77.2,
+        77.3
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "full",
+    "agencies": {
+      "civic": "MCD",
+      "water": "DJB"
+    },
+    "agency_names": {
+      "DJB": "Delhi Jal Board",
+      "MCD": "Municipal Corporation of Delhi"
+    },
+    "agency_confidence": "high",
+    "why": "Full demo city: 6x6 grid; waterlogging hotspots; agency routing; replays",
+    "zones": [
+      {
+        "id": "gurugram",
+        "name": "Gurugram",
+        "name_hi": "गुरुग्राम",
+        "lat": 28.4601,
+        "lon": 77.0263,
+        "radius_km": 12,
+        "agencies": {
+          "civic": "MCG",
+          "water": "GMDA"
+        },
+        "agency_names": {
+          "GMDA": "Gurugram Metropolitan Development Authority",
+          "MCG": "Municipal Corporation of Gurugram"
+        },
+        "coord_source": "open-meteo-geocoding"
+      },
+      {
+        "id": "noida",
+        "name": "Noida",
+        "name_hi": "नोएडा",
+        "lat": 28.58,
+        "lon": 77.33,
+        "radius_km": 9,
+        "agencies": {
+          "civic": "NOIDA_AUTH",
+          "water": "NOIDA_AUTH"
+        },
+        "agency_names": {
+          "NOIDA_AUTH": "Noida Authority"
+        },
+        "coord_source": "open-meteo-geocoding"
+      },
+      {
+        "id": "faridabad",
+        "name": "Faridabad",
+        "name_hi": "फ़रीदाबाद",
+        "lat": 28.4112,
+        "lon": 77.3132,
+        "radius_km": 10,
+        "agencies": {
+          "civic": "MCF",
+          "water": "MCF"
+        },
+        "agency_names": {
+          "MCF": "Municipal Corporation Faridabad"
+        },
+        "coord_source": "open-meteo-geocoding"
+      },
+      {
+        "id": "ghaziabad",
+        "name": "Ghaziabad",
+        "name_hi": "ग़ाज़ियाबाद",
+        "lat": 28.6654,
+        "lon": 77.4391,
+        "radius_km": 9,
+        "agencies": {
+          "civic": "GNN",
+          "water": "GNN"
+        },
+        "agency_names": {
+          "GNN": "Ghaziabad Nagar Nigam"
+        },
+        "coord_source": "open-meteo-geocoding"
+      }
+    ]
+  },
+  {
+    "id": "mumbai",
+    "name": "Mumbai",
+    "name_hi": "मुंबई",
+    "state": "Maharashtra",
+    "lat": 19.0728,
+    "lon": 72.8826,
+    "population": 12691836,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        19.0,
+        19.1,
+        19.2
+      ],
+      "lons": [
+        72.8,
+        72.9,
+        73.0
+      ]
+    },
+    "grid_centre_override": "19.1;72.9",
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "BMC",
+      "water": "BMC"
+    },
+    "agency_names": {
+      "BMC": "Brihanmumbai Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Coastal humid heat and monsoon flooding; centre moved inland so the grid is not over the sea"
+  },
+  {
+    "id": "kolkata",
+    "name": "Kolkata",
+    "name_hi": "कोलकाता",
+    "state": "West Bengal",
+    "lat": 22.5626,
+    "lon": 88.363,
+    "population": 4631392,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        22.5,
+        22.6,
+        22.7
+      ],
+      "lons": [
+        88.3,
+        88.4,
+        88.5
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "KMC",
+      "water": "KMC"
+    },
+    "agency_names": {
+      "KMC": "Kolkata Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Humid heat and monsoon waterlogging"
+  },
+  {
+    "id": "chennai",
+    "name": "Chennai",
+    "name_hi": "चेन्नई",
+    "state": "Tamil Nadu",
+    "lat": 13.0878,
+    "lon": 80.2785,
+    "population": 4681087,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        13.0,
+        13.1,
+        13.2
+      ],
+      "lons": [
+        80.1,
+        80.2,
+        80.3
+      ]
+    },
+    "grid_centre_override": "13.1;80.2",
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "GCC",
+      "water": "CMWSSB"
+    },
+    "agency_names": {
+      "CMWSSB": "Chennai Metrowater (CMWSSB)",
+      "GCC": "Greater Chennai Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Coastal humid heat; water scarcity; centre moved inland so the grid is not over the sea"
+  },
+  {
+    "id": "bengaluru",
+    "name": "Bengaluru",
+    "name_hi": "बेंगलुरु",
+    "state": "Karnataka",
+    "lat": 12.9719,
+    "lon": 77.5937,
+    "population": 8495492,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        12.9,
+        13.0,
+        13.1
+      ],
+      "lons": [
+        77.5,
+        77.6,
+        77.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "GBA",
+      "water": "BWSSB"
+    },
+    "agency_names": {
+      "BWSSB": "Bangalore Water Supply and Sewerage Board",
+      "GBA": "Greater Bengaluru Authority"
+    },
+    "agency_confidence": "low",
+    "why": "Water tanker dependence; flash flooding"
+  },
+  {
+    "id": "hyderabad",
+    "name": "Hyderabad",
+    "name_hi": "हैदराबाद",
+    "state": "Telangana",
+    "lat": 17.384,
+    "lon": 78.4564,
+    "population": 6993262,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        17.3,
+        17.4,
+        17.5
+      ],
+      "lons": [
+        78.4,
+        78.5,
+        78.6
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "GHMC",
+      "water": "HMWSSB"
+    },
+    "agency_names": {
+      "HMWSSB": "Hyderabad Metropolitan Water Supply and Sewerage Board",
+      "GHMC": "Greater Hyderabad Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Dry heat above 44 C; Telangana heatstroke deaths in 2026"
+  },
+  {
+    "id": "ahmedabad",
+    "name": "Ahmedabad",
+    "name_hi": "अहमदाबाद",
+    "state": "Gujarat",
+    "lat": 23.0258,
+    "lon": 72.5873,
+    "population": 6357693,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        22.9,
+        23.0,
+        23.1
+      ],
+      "lons": [
+        72.5,
+        72.6,
+        72.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "AMC",
+      "water": "AMC"
+    },
+    "agency_names": {
+      "AMC": "Ahmedabad Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "India's first city heat action plan (2013)"
+  },
+  {
+    "id": "lucknow",
+    "name": "Lucknow",
+    "name_hi": "लखनऊ",
+    "state": "Uttar Pradesh",
+    "lat": 26.8393,
+    "lon": 80.9231,
+    "population": 2472011,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        26.7,
+        26.8,
+        26.9
+      ],
+      "lons": [
+        80.8,
+        80.9,
+        81.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "LMC",
+      "water": "LMC"
+    },
+    "agency_names": {
+      "LMC": "Lucknow Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Indo-Gangetic plain heat and hot nights"
+  },
+  {
+    "id": "jaipur",
+    "name": "Jaipur",
+    "name_hi": "जयपुर",
+    "state": "Rajasthan",
+    "lat": 26.9196,
+    "lon": 75.7878,
+    "population": 3046163,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        26.8,
+        26.9,
+        27.0
+      ],
+      "lons": [
+        75.7,
+        75.8,
+        75.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "JMC",
+      "water": "PHED"
+    },
+    "agency_names": {
+      "PHED": "Public Health Engineering Department Rajasthan",
+      "JMC": "Jaipur Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Desert dry heat; groundwater stress"
+  },
+  {
+    "id": "patna",
+    "name": "Patna",
+    "name_hi": "पटना",
+    "state": "Bihar",
+    "lat": 25.5941,
+    "lon": 85.1356,
+    "population": 1684297,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        25.5,
+        25.6,
+        25.7
+      ],
+      "lons": [
+        85.0,
+        85.1,
+        85.2
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "PMC",
+      "water": "PMC"
+    },
+    "agency_names": {
+      "PMC": "Patna Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Humid heat in the Gangetic plain; monsoon waterlogging"
+  },
+  {
+    "id": "nagpur",
+    "name": "Nagpur",
+    "name_hi": "नागपुर",
+    "state": "Maharashtra",
+    "lat": 21.1463,
+    "lon": 79.0849,
+    "population": 2405665,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        21.0,
+        21.1,
+        21.2
+      ],
+      "lons": [
+        79.0,
+        79.1,
+        79.2
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "heat_and_rain",
+    "agencies": {
+      "civic": "NMC",
+      "water": "NMC"
+    },
+    "agency_names": {
+      "NMC": "Nagpur Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Among India's hottest cities in May"
+  },
+  {
+    "id": "pune",
+    "name": "Pune",
+    "name_hi": "पुणे",
+    "state": "Maharashtra",
+    "lat": 18.5196,
+    "lon": 73.8554,
+    "population": 3124458,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        18.5
+      ],
+      "lons": [
+        73.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "PUNE_MC",
+      "water": "PUNE_MC"
+    },
+    "agency_names": {
+      "PUNE_MC": "Pune Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "surat",
+    "name": "Surat",
+    "name_hi": "सूरत",
+    "state": "Gujarat",
+    "lat": 21.1959,
+    "lon": 72.8302,
+    "population": 4591246,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        21.2
+      ],
+      "lons": [
+        72.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "SURAT_MC",
+      "water": "SURAT_MC"
+    },
+    "agency_names": {
+      "SURAT_MC": "Surat Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "kanpur",
+    "name": "Kanpur",
+    "name_hi": "कानपुर",
+    "state": "Uttar Pradesh",
+    "lat": 26.4652,
+    "lon": 80.3498,
+    "population": 2823249,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        26.5
+      ],
+      "lons": [
+        80.3
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "KANPUR_NN",
+      "water": "KANPUR_NN"
+    },
+    "agency_names": {
+      "KANPUR_NN": "Kanpur Nagar Nigam"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "indore",
+    "name": "Indore",
+    "name_hi": "इंदौर",
+    "state": "Madhya Pradesh",
+    "lat": 22.7179,
+    "lon": 75.8333,
+    "population": 1994397,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        22.7
+      ],
+      "lons": [
+        75.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "INDORE_MC",
+      "water": "INDORE_MC"
+    },
+    "agency_names": {
+      "INDORE_MC": "Indore Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "bhopal",
+    "name": "Bhopal",
+    "name_hi": "भोपाल",
+    "state": "Madhya Pradesh",
+    "lat": 23.2547,
+    "lon": 77.4029,
+    "population": 1798218,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        23.3
+      ],
+      "lons": [
+        77.4
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "BHOPAL_MC",
+      "water": "BHOPAL_MC"
+    },
+    "agency_names": {
+      "BHOPAL_MC": "Bhopal Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "visakhapatnam",
+    "name": "Visakhapatnam",
+    "name_hi": "विशाखापत्तनम",
+    "state": "Andhra Pradesh",
+    "lat": 17.6801,
+    "lon": 83.2016,
+    "population": 1063178,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        17.7
+      ],
+      "lons": [
+        83.2
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "GVMC",
+      "water": "GVMC"
+    },
+    "agency_names": {
+      "GVMC": "Greater Visakhapatnam Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "vadodara",
+    "name": "Vadodara",
+    "name_hi": "वडोदरा",
+    "state": "Gujarat",
+    "lat": 22.2994,
+    "lon": 73.2081,
+    "population": 1822221,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        22.3
+      ],
+      "lons": [
+        73.2
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "VADODARA_MC",
+      "water": "VADODARA_MC"
+    },
+    "agency_names": {
+      "VADODARA_MC": "Vadodara Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "ludhiana",
+    "name": "Ludhiana",
+    "name_hi": "लुधियाना",
+    "state": "Punjab",
+    "lat": 30.912,
+    "lon": 75.8538,
+    "population": 1618879,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        30.9
+      ],
+      "lons": [
+        75.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "LUDHIANA_MC",
+      "water": "LUDHIANA_MC"
+    },
+    "agency_names": {
+      "LUDHIANA_MC": "Ludhiana Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "agra",
+    "name": "Agra",
+    "name_hi": "आगरा",
+    "state": "Uttar Pradesh",
+    "lat": 27.1833,
+    "lon": 78.0167,
+    "population": 1430055,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        27.2
+      ],
+      "lons": [
+        78.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "AGRA_NN",
+      "water": "AGRA_NN"
+    },
+    "agency_names": {
+      "AGRA_NN": "Agra Nagar Nigam"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "nashik",
+    "name": "Nashik",
+    "name_hi": "नासिक",
+    "state": "Maharashtra",
+    "lat": 19.9973,
+    "lon": 73.791,
+    "population": 1486053,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        20.0
+      ],
+      "lons": [
+        73.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "NASHIK_MC",
+      "water": "NASHIK_MC"
+    },
+    "agency_names": {
+      "NASHIK_MC": "Nashik Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "varanasi",
+    "name": "Varanasi",
+    "name_hi": "वाराणसी",
+    "state": "Uttar Pradesh",
+    "lat": 25.3167,
+    "lon": 83.0104,
+    "population": 1164404,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        25.3
+      ],
+      "lons": [
+        83.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "VARANASI_NN",
+      "water": "VARANASI_NN"
+    },
+    "agency_names": {
+      "VARANASI_NN": "Varanasi Nagar Nigam"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "meerut",
+    "name": "Meerut",
+    "name_hi": "मेरठ",
+    "state": "Uttar Pradesh",
+    "lat": 28.98,
+    "lon": 77.7064,
+    "population": 1223184,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        29.0
+      ],
+      "lons": [
+        77.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "MEERUT_NN",
+      "water": "MEERUT_NN"
+    },
+    "agency_names": {
+      "MEERUT_NN": "Meerut Nagar Nigam"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "rajkot",
+    "name": "Rajkot",
+    "name_hi": "राजकोट",
+    "state": "Gujarat",
+    "lat": 22.2916,
+    "lon": 70.7932,
+    "population": 1390640,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        22.3
+      ],
+      "lons": [
+        70.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "RAJKOT_MC",
+      "water": "RAJKOT_MC"
+    },
+    "agency_names": {
+      "RAJKOT_MC": "Rajkot Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "srinagar",
+    "name": "Srinagar",
+    "name_hi": "श्रीनगर",
+    "state": "Jammu and Kashmir",
+    "lat": 34.0857,
+    "lon": 74.8055,
+    "population": 1206419,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        34.1
+      ],
+      "lons": [
+        74.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "SRINAGAR_MC",
+      "water": "SRINAGAR_MC"
+    },
+    "agency_names": {
+      "SRINAGAR_MC": "Srinagar Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "jammu",
+    "name": "Jammu",
+    "name_hi": "जम्मू",
+    "state": "Jammu and Kashmir",
+    "lat": 32.7353,
+    "lon": 74.8617,
+    "population": 576198,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        32.7
+      ],
+      "lons": [
+        74.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "JAMMU_MC",
+      "water": "JAMMU_MC"
+    },
+    "agency_names": {
+      "JAMMU_MC": "Jammu Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "prayagraj",
+    "name": "Prayagraj",
+    "name_hi": "प्रयागराज",
+    "state": "Uttar Pradesh",
+    "lat": 25.4448,
+    "lon": 81.8432,
+    "population": 1073438,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        25.4
+      ],
+      "lons": [
+        81.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "PRAYAGRAJ_NN",
+      "water": "PRAYAGRAJ_NN"
+    },
+    "agency_names": {
+      "PRAYAGRAJ_NN": "Prayagraj Nagar Nigam"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "ranchi",
+    "name": "Ranchi",
+    "name_hi": "रांची",
+    "state": "Jharkhand",
+    "lat": 23.3432,
+    "lon": 85.3094,
+    "population": 1120374,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        23.3
+      ],
+      "lons": [
+        85.3
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "RANCHI_MC",
+      "water": "RANCHI_MC"
+    },
+    "agency_names": {
+      "RANCHI_MC": "Ranchi Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "raipur",
+    "name": "Raipur",
+    "name_hi": "रायपुर",
+    "state": "Chhattisgarh",
+    "lat": 21.2333,
+    "lon": 81.6333,
+    "population": 1027264,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        21.2
+      ],
+      "lons": [
+        81.6
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "RAIPUR_MC",
+      "water": "RAIPUR_MC"
+    },
+    "agency_names": {
+      "RAIPUR_MC": "Raipur Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "amritsar",
+    "name": "Amritsar",
+    "name_hi": "अमृतसर",
+    "state": "Punjab",
+    "lat": 31.6223,
+    "lon": 74.8753,
+    "population": 1159227,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        31.6
+      ],
+      "lons": [
+        74.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "AMRITSAR_MC",
+      "water": "AMRITSAR_MC"
+    },
+    "agency_names": {
+      "AMRITSAR_MC": "Amritsar Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "jodhpur",
+    "name": "Jodhpur",
+    "name_hi": "जोधपुर",
+    "state": "Rajasthan",
+    "lat": 26.2684,
+    "lon": 73.0059,
+    "population": 1056191,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        26.3
+      ],
+      "lons": [
+        73.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "JODHPUR_MC",
+      "water": "PHED"
+    },
+    "agency_names": {
+      "PHED": "Public Health Engineering Department Rajasthan",
+      "JODHPUR_MC": "Jodhpur Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "gwalior",
+    "name": "Gwalior",
+    "name_hi": "ग्वालियर",
+    "state": "Madhya Pradesh",
+    "lat": 26.2298,
+    "lon": 78.1734,
+    "population": 1054420,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        26.2
+      ],
+      "lons": [
+        78.2
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "GWALIOR_MC",
+      "water": "GWALIOR_MC"
+    },
+    "agency_names": {
+      "GWALIOR_MC": "Gwalior Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "jabalpur",
+    "name": "Jabalpur",
+    "name_hi": "जबलपुर",
+    "state": "Madhya Pradesh",
+    "lat": 23.167,
+    "lon": 79.9501,
+    "population": 1081677,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        23.2
+      ],
+      "lons": [
+        80.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "JABALPUR_MC",
+      "water": "JABALPUR_MC"
+    },
+    "agency_names": {
+      "JABALPUR_MC": "Jabalpur Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "kota",
+    "name": "Kota",
+    "name_hi": "कोटा",
+    "state": "Rajasthan",
+    "lat": 25.1825,
+    "lon": 75.8391,
+    "population": 1001694,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        25.2
+      ],
+      "lons": [
+        75.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "KOTA_MC",
+      "water": "PHED"
+    },
+    "agency_names": {
+      "PHED": "Public Health Engineering Department Rajasthan",
+      "KOTA_MC": "Kota Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "vijayawada",
+    "name": "Vijayawada",
+    "name_hi": "विजयवाड़ा",
+    "state": "Andhra Pradesh",
+    "lat": 16.5074,
+    "lon": 80.6466,
+    "population": 1143232,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        16.5
+      ],
+      "lons": [
+        80.6
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "VMC_VJA",
+      "water": "VMC_VJA"
+    },
+    "agency_names": {
+      "VMC_VJA": "Vijayawada Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "madurai",
+    "name": "Madurai",
+    "name_hi": "मदुरै",
+    "state": "Tamil Nadu",
+    "lat": 9.919,
+    "lon": 78.1195,
+    "population": 1465625,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        9.9
+      ],
+      "lons": [
+        78.1
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "MADURAI_MC",
+      "water": "MADURAI_MC"
+    },
+    "agency_names": {
+      "MADURAI_MC": "Madurai Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "coimbatore",
+    "name": "Coimbatore",
+    "name_hi": "कोयंबटूर",
+    "state": "Tamil Nadu",
+    "lat": 11.0055,
+    "lon": 76.9661,
+    "population": 2136916,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        11.0
+      ],
+      "lons": [
+        77.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "COIMBATORE_MC",
+      "water": "COIMBATORE_MC"
+    },
+    "agency_names": {
+      "COIMBATORE_MC": "Coimbatore City Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "tiruchirappalli",
+    "name": "Tiruchirappalli",
+    "name_hi": "तिरुचिरापल्ली",
+    "state": "Tamil Nadu",
+    "lat": 10.8155,
+    "lon": 78.6965,
+    "population": 1022518,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        10.8
+      ],
+      "lons": [
+        78.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "TRICHY_MC",
+      "water": "TRICHY_MC"
+    },
+    "agency_names": {
+      "TRICHY_MC": "Tiruchirappalli City Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "kochi",
+    "name": "Kochi",
+    "name_hi": "कोच्चि",
+    "state": "Kerala",
+    "lat": 9.9399,
+    "lon": 76.2602,
+    "population": 633553,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        9.9
+      ],
+      "lons": [
+        76.3
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "KOCHI_MC",
+      "water": "KWA"
+    },
+    "agency_names": {
+      "KWA": "Kerala Water Authority",
+      "KOCHI_MC": "Kochi Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "thiruvananthapuram",
+    "name": "Thiruvananthapuram",
+    "name_hi": "तिरुवनंतपुरम",
+    "state": "Kerala",
+    "lat": 8.4855,
+    "lon": 76.9492,
+    "population": 788271,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        8.5
+      ],
+      "lons": [
+        76.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "TVM_MC",
+      "water": "KWA"
+    },
+    "agency_names": {
+      "KWA": "Kerala Water Authority",
+      "TVM_MC": "Thiruvananthapuram Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "kozhikode",
+    "name": "Kozhikode",
+    "name_hi": "कोझिकोड",
+    "state": "Kerala",
+    "lat": 11.248,
+    "lon": 75.7804,
+    "population": 550440,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        11.2
+      ],
+      "lons": [
+        75.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "KOZHIKODE_MC",
+      "water": "KWA"
+    },
+    "agency_names": {
+      "KWA": "Kerala Water Authority",
+      "KOZHIKODE_MC": "Kozhikode Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "chandigarh",
+    "name": "Chandigarh",
+    "name_hi": "चंडीगढ़",
+    "state": "Chandigarh",
+    "lat": 30.7363,
+    "lon": 76.7884,
+    "population": 970602,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        30.7
+      ],
+      "lons": [
+        76.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "MC_CHANDIGARH",
+      "water": "MC_CHANDIGARH"
+    },
+    "agency_names": {
+      "MC_CHANDIGARH": "Municipal Corporation Chandigarh"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "dehradun",
+    "name": "Dehradun",
+    "name_hi": "देहरादून",
+    "state": "Uttarakhand",
+    "lat": 30.3244,
+    "lon": 78.0339,
+    "population": 522081,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        30.3
+      ],
+      "lons": [
+        78.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "DEHRADUN_MC",
+      "water": "UJS"
+    },
+    "agency_names": {
+      "UJS": "Uttarakhand Jal Sansthan",
+      "DEHRADUN_MC": "Dehradun Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "shimla",
+    "name": "Shimla",
+    "name_hi": "शिमला",
+    "state": "Himachal Pradesh",
+    "lat": 31.1044,
+    "lon": 77.1666,
+    "population": 173503,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        31.1
+      ],
+      "lons": [
+        77.2
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "SHIMLA_MC",
+      "water": "SJPNL"
+    },
+    "agency_names": {
+      "SJPNL": "Shimla Jal Prabandhan Nigam",
+      "SHIMLA_MC": "Shimla Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "bhubaneswar",
+    "name": "Bhubaneswar",
+    "name_hi": "भुवनेश्वर",
+    "state": "Odisha",
+    "lat": 20.2724,
+    "lon": 85.8338,
+    "population": 885363,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        20.3
+      ],
+      "lons": [
+        85.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "BBSR_MC",
+      "water": "WATCO"
+    },
+    "agency_names": {
+      "WATCO": "Water Corporation of Odisha",
+      "BBSR_MC": "Bhubaneswar Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "guwahati",
+    "name": "Guwahati",
+    "name_hi": "गुवाहाटी",
+    "state": "Assam",
+    "lat": 26.1844,
+    "lon": 91.7458,
+    "population": 962334,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        26.2
+      ],
+      "lons": [
+        91.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "GMC_GHY",
+      "water": "GMC_GHY"
+    },
+    "agency_names": {
+      "GMC_GHY": "Guwahati Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "dhanbad",
+    "name": "Dhanbad",
+    "name_hi": "धनबाद",
+    "state": "Jharkhand",
+    "lat": 23.7976,
+    "lon": 86.4299,
+    "population": 1196214,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        23.8
+      ],
+      "lons": [
+        86.4
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "DHANBAD_MC",
+      "water": "DHANBAD_MC"
+    },
+    "agency_names": {
+      "DHANBAD_MC": "Dhanbad Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "jamshedpur",
+    "name": "Jamshedpur",
+    "name_hi": "जमशेदपुर",
+    "state": "Jharkhand",
+    "lat": 22.8028,
+    "lon": 86.1855,
+    "population": 1339438,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        22.8
+      ],
+      "lons": [
+        86.2
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "JNAC",
+      "water": "JNAC"
+    },
+    "agency_names": {
+      "JNAC": "Jamshedpur Notified Area Committee"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "aurangabad",
+    "name": "Chhatrapati Sambhajinagar",
+    "name_hi": "छत्रपति संभाजीनगर",
+    "state": "Maharashtra",
+    "lat": 19.8776,
+    "lon": 75.3423,
+    "population": 1175116,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        19.9
+      ],
+      "lons": [
+        75.3
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "CSMC",
+      "water": "CSMC"
+    },
+    "agency_names": {
+      "CSMC": "Chhatrapati Sambhajinagar Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "gandhinagar",
+    "name": "Gandhinagar",
+    "name_hi": "गांधीनगर",
+    "state": "Gujarat",
+    "lat": 23.2167,
+    "lon": 72.6833,
+    "population": 292797,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        23.2
+      ],
+      "lons": [
+        72.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "GANDHINAGAR_MC",
+      "water": "GANDHINAGAR_MC"
+    },
+    "agency_names": {
+      "GANDHINAGAR_MC": "Gandhinagar Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "panaji",
+    "name": "Panaji",
+    "name_hi": "पणजी",
+    "state": "Goa",
+    "lat": 15.4957,
+    "lon": 73.8262,
+    "population": 70991,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        15.5
+      ],
+      "lons": [
+        73.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "CCP",
+      "water": "PWD_GOA"
+    },
+    "agency_names": {
+      "PWD_GOA": "Goa Public Works Department (water)",
+      "CCP": "Corporation of the City of Panaji"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "shillong",
+    "name": "Shillong",
+    "name_hi": "शिलांग",
+    "state": "Meghalaya",
+    "lat": 25.5689,
+    "lon": 91.8831,
+    "population": 143229,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        25.6
+      ],
+      "lons": [
+        91.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "SMB",
+      "water": "PHED_ML"
+    },
+    "agency_names": {
+      "PHED_ML": "Public Health Engineering Department Meghalaya",
+      "SMB": "Shillong Municipal Board"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "imphal",
+    "name": "Imphal",
+    "name_hi": "इंफाल",
+    "state": "Manipur",
+    "lat": 24.8081,
+    "lon": 93.9442,
+    "population": 277196,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        24.8
+      ],
+      "lons": [
+        93.9
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "IMC_MN",
+      "water": "PHED_MN"
+    },
+    "agency_names": {
+      "PHED_MN": "Public Health Engineering Department Manipur",
+      "IMC_MN": "Imphal Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "agartala",
+    "name": "Agartala",
+    "name_hi": "अगरतला",
+    "state": "Tripura",
+    "lat": 23.8361,
+    "lon": 91.2794,
+    "population": 400004,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        23.8
+      ],
+      "lons": [
+        91.3
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "AMC_TR",
+      "water": "DWS_TR"
+    },
+    "agency_names": {
+      "DWS_TR": "Drinking Water and Sanitation Department Tripura",
+      "AMC_TR": "Agartala Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "aizawl",
+    "name": "Aizawl",
+    "name_hi": "आइज़ोल",
+    "state": "Mizoram",
+    "lat": 23.7289,
+    "lon": 92.7179,
+    "population": 293416,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        23.7
+      ],
+      "lons": [
+        92.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "AMC_MZ",
+      "water": "PHED_MZ"
+    },
+    "agency_names": {
+      "PHED_MZ": "Public Health Engineering Department Mizoram",
+      "AMC_MZ": "Aizawl Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "kohima",
+    "name": "Kohima",
+    "name_hi": "कोहिमा",
+    "state": "Nagaland",
+    "lat": 25.6747,
+    "lon": 94.111,
+    "population": 99039,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        25.7
+      ],
+      "lons": [
+        94.1
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "KMC_NL",
+      "water": "PHED_NL"
+    },
+    "agency_names": {
+      "PHED_NL": "Public Health Engineering Department Nagaland",
+      "KMC_NL": "Kohima Municipal Council"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "itanagar",
+    "name": "Itanagar",
+    "name_hi": "ईटानगर",
+    "state": "Arunachal Pradesh",
+    "lat": 27.0869,
+    "lon": 93.6099,
+    "population": 59490,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        27.1
+      ],
+      "lons": [
+        93.6
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "IMC_AR",
+      "water": "PHED_AR"
+    },
+    "agency_names": {
+      "PHED_AR": "Public Health Engineering Department Arunachal Pradesh",
+      "IMC_AR": "Itanagar Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "gangtok",
+    "name": "Gangtok",
+    "name_hi": "गंगटोक",
+    "state": "Sikkim",
+    "lat": 27.3257,
+    "lon": 88.6122,
+    "population": 100286,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        27.3
+      ],
+      "lons": [
+        88.6
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "GMC_SK",
+      "water": "PHED_SK"
+    },
+    "agency_names": {
+      "PHED_SK": "Water Security and Public Health Engineering Department Sikkim",
+      "GMC_SK": "Gangtok Municipal Corporation"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "puducherry",
+    "name": "Puducherry",
+    "name_hi": "पुदुचेरी",
+    "state": "Puducherry",
+    "lat": 11.9338,
+    "lon": 79.8298,
+    "population": 657209,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        11.9
+      ],
+      "lons": [
+        79.8
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "PDY_MUN",
+      "water": "PWD_PY"
+    },
+    "agency_names": {
+      "PWD_PY": "Puducherry Public Works Department (water)",
+      "PDY_MUN": "Puducherry Municipality"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "port_blair",
+    "name": "Sri Vijaya Puram (Port Blair)",
+    "name_hi": "श्री विजयपुरम (पोर्ट ब्लेयर)",
+    "state": "Andaman and Nicobar Islands",
+    "lat": 11.6661,
+    "lon": 92.7464,
+    "population": 112050,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        11.7
+      ],
+      "lons": [
+        92.7
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "PBMC",
+      "water": "APWD"
+    },
+    "agency_names": {
+      "APWD": "Andaman Public Works Department",
+      "PBMC": "Port Blair Municipal Council"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "silvassa",
+    "name": "Silvassa",
+    "name_hi": "सिलवासा",
+    "state": "Dadra and Nagar Haveli and Daman and Diu",
+    "lat": 20.2739,
+    "lon": 72.9967,
+    "population": 98265,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        20.3
+      ],
+      "lons": [
+        73.0
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "SMC_DNH",
+      "water": "PWD_DNH"
+    },
+    "agency_names": {
+      "PWD_DNH": "DNH Public Works Department (water)",
+      "SMC_DNH": "Silvassa Municipal Council"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "leh",
+    "name": "Leh",
+    "name_hi": "लेह",
+    "state": "Ladakh",
+    "lat": 34.165,
+    "lon": 77.584,
+    "population": 37475,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        34.2
+      ],
+      "lons": [
+        77.6
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "MC_LEH",
+      "water": "PHED_LA"
+    },
+    "agency_names": {
+      "PHED_LA": "Jal Shakti Department Ladakh",
+      "MC_LEH": "Municipal Committee Leh"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  },
+  {
+    "id": "kavaratti",
+    "name": "Kavaratti",
+    "name_hi": "कवरत्ती",
+    "state": "Lakshadweep",
+    "lat": 10.5669,
+    "lon": 72.642,
+    "population": 11210,
+    "coord_source": "open-meteo-geocoding",
+    "grid": {
+      "lats": [
+        10.6
+      ],
+      "lons": [
+        72.6
+      ]
+    },
+    "grid_centre_override": null,
+    "tier": "city",
+    "agencies": {
+      "civic": "LAK_ADMIN",
+      "water": "LAK_ADMIN"
+    },
+    "agency_names": {
+      "LAK_ADMIN": "Lakshadweep Administration"
+    },
+    "agency_confidence": "low",
+    "why": "Million-plus city or state/UT capital (pan-India coverage); one forecast cell"
+  }
+]

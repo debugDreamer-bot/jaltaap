@@ -28,8 +28,13 @@ def is_emergency(text: str) -> bool:
 
 def build_agent(ctx: UserContext, history: list[dict], model_id: str | None = None) -> Agent:
     s = settings()
-    model = BedrockModel(model_id=model_id or s.model_id, region_name=s.bedrock_region,
-                         temperature=0.2, max_tokens=600, streaming=False)
+    if s.llm_provider == "ollama":   # local development only; "think" off keeps small models fast
+        from strands.models.ollama import OllamaModel
+        model = OllamaModel(s.ollama_host, model_id=model_id or s.model_id, temperature=0.2, max_tokens=600,
+                            additional_args={"think": False})
+    else:
+        model = BedrockModel(model_id=model_id or s.model_id, region_name=s.bedrock_region,
+                             temperature=0.2, max_tokens=600, streaming=False)
     return Agent(model=model, system_prompt=SYSTEM_PROMPT, tools=build_tools(ctx), messages=list(history),
                  callback_handler=None)
 

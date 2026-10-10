@@ -4,9 +4,10 @@ S3 and SQS emulated in memory by moto. Forecasts come live from Open-Meteo.
     .venv/bin/python scripts/dev_api.py --port 8787
     VITE_API_URL=http://127.0.0.1:8787 npm run dev   (in web/)
 
-Bedrock is not emulated: /chat works only with real AWS credentials and model access. Without
-them the agent falls back to its fixed "data unavailable" reply, which is the correct production
-behaviour when the model is down. Development only; never deploy this file.
+The agent runs on a free local Ollama model by default (`ollama pull qwen3.5:9b`), because moto
+cannot emulate Bedrock. With JALTAAP_SECRET_TELEGRAM_BOT_TOKEN set (shell or a gitignored .env),
+`--telegram` long-polls the bot and feeds each message to the real worker: no deploy or public URL.
+Development only; never deploy this file.
 """
 from __future__ import annotations
 
@@ -14,6 +15,9 @@ import argparse
 import json
 import os
 import sys
+import threading
+import time
+import traceback
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from urllib.parse import parse_qsl, urlparse
@@ -21,6 +25,24 @@ from urllib.parse import parse_qsl, urlparse
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT / "backend"))
 sys.path.insert(0, str(ROOT / "backend" / "tests"))
+
+# Real dev values that must win over conftest's test defaults (it sets a fake bot token).
+DEV_KEYS = ("LLM_PROVIDER", "MODEL_ID", "OLLAMA_HOST", "JALTAAP_SECRET_TELEGRAM_BOT_TOKEN")
+
+
+def _dev_env() -> dict:
+    found = {}
+    env_file = ROOT / ".env"
+    if env_file.exists():
+        for line in env_file.read_text().splitlines():
+            key, sep, value = line.strip().partition("=")
+            if sep and key in DEV_KEYS:
+                found[key] = value.strip().strip("\"'")
+    found.update({k: os.environ[k] for k in DEV_KEYS if os.environ.get(k)})
+    return found
+
+
+DEV_ENV = _dev_env()
 
 import boto3  # noqa: E402
 from moto import mock_aws  # noqa: E402
@@ -241,17 +263,70 @@ class Handler(BaseHTTPRequestHandler):
         sys.stderr.write("dev_api %s\n" % (fmt % args))
 
 
+def poll_telegram(token: str) -> None:
+    """Free local stand-in for TelegramWebhookFn + SQS: long-poll getUpdates, run the real worker."""
+    import httpx
+    from common import dynamo
+    from common.channels import telegram
+    from handlers import worker
+    api = f"https://api.telegram.org/bot{token}"
+    try:
+        me = httpx.get(f"{api}/getMe", timeout=15).json()
+    except httpx.HTTPError as err:
+        print(f"Telegram: could not reach api.telegram.org ({err!r}); bot not started")
+        return
+    if not me.get("ok"):
+        print(f"Telegram: token rejected ({me.get('description')}); bot not started")
+        return
+    httpx.post(f"{api}/deleteWebhook", timeout=15)   # getUpdates is refused while a webhook is set
+    print(f"Telegram bot @{me['result']['username']} is live: open https://t.me/{me['result']['username']}")
+    offset = None
+    while True:
+        try:
+            r = httpx.get(f"{api}/getUpdates", timeout=70,
+                          params={"timeout": 50, "offset": offset, "allowed_updates": '["message"]'})
+            updates = r.json().get("result", [])
+        except (httpx.HTTPError, ValueError) as err:
+            sys.stderr.write(f"telegram poll failed: {err!r}; retrying\n")
+            time.sleep(5)
+            continue
+        for update in updates:
+            offset = update["update_id"] + 1
+            for msg in telegram.parse_update(update):
+                if not dynamo.claim_message("telegram", msg.message_id):
+                    continue
+                try:   # the local model is slow; show "typing…" while it works
+                    httpx.post(f"{api}/sendChatAction", json={"chat_id": msg.channel_user_id, "action": "typing"},
+                               timeout=10)
+                    worker.process(msg)
+                except Exception:  # noqa: BLE001 - keep polling; the deployed worker would retry via SQS
+                    traceback.print_exc()
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--port", type=int, default=8787)
+    ap.add_argument("--llm", choices=("ollama", "bedrock"), default=DEV_ENV.get("LLM_PROVIDER", "ollama"),
+                    help="ollama (free, local) or bedrock (needs real AWS; moto cannot emulate it)")
+    ap.add_argument("--model", default=DEV_ENV.get("MODEL_ID", "qwen3.5:9b"), help="Ollama model name")
+    ap.add_argument("--telegram", action="store_true", help="run the Telegram bot by long polling")
     args = ap.parse_args()
     os.environ.setdefault("JALTAAP_SECRET_EVAL_TOKEN", "dev-eval")
+    os.environ.update(DEV_ENV)
+    if args.llm == "ollama":
+        os.environ.update(LLM_PROVIDER="ollama", MODEL_ID=args.model, FALLBACK_MODEL_ID="")
+    token = DEV_ENV.get("JALTAAP_SECRET_TELEGRAM_BOT_TOKEN")
+    if args.telegram and not token:
+        sys.exit("--telegram needs JALTAAP_SECRET_TELEGRAM_BOT_TOKEN (from @BotFather) in the shell or .env")
     with mock_aws():
         from common import aws as awsmod
         awsmod.reset_cache()
         seed()
         print(f"JalTaap dev API on http://127.0.0.1:{args.port}  (moto; Ctrl-C to stop)")
+        print(f"Agent model: {args.llm} {os.environ['MODEL_ID']}")
         print(f"Dev officer sign-in: {', '.join(DEMO_ACCOUNTS)} / password {DEMO_PASSWORD}")
+        if args.telegram:
+            threading.Thread(target=poll_telegram, args=(token,), daemon=True).start()
         ThreadingHTTPServer(("127.0.0.1", args.port), Handler).serve_forever()
 
 

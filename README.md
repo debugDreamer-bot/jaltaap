@@ -165,9 +165,15 @@ python3 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt
 cd web && npm install && VITE_API_URL=http://127.0.0.1:8787 npm run dev
 ```
 
-The dev API emulates DynamoDB, S3 and SQS. Bedrock is not emulated: without AWS credentials,
-`/chat` returns the fixed "data unavailable" reply, which is what production does when the
-model is down.
+The dev API emulates DynamoDB, S3 and SQS. Bedrock cannot be emulated, so the agent runs free on
+a local [Ollama](https://ollama.com/) model instead (`ollama pull qwen3.5:9b`; pick another with
+`--model`). Deployed stacks always use Bedrock.
+
+**Telegram bot, free and local.** Create a bot with @BotFather, put its token in a `.env` file
+at the repo root (gitignored) as `JALTAAP_SECRET_TELEGRAM_BOT_TOKEN=123456:ABC...`, then run
+`.venv/bin/python scripts/dev_api.py --telegram`. It long-polls Telegram and runs each message
+through the real worker, so no deploy or public URL is needed. Photo verification and voice
+notes still need AWS (Bedrock, Transcribe, Polly).
 
 ## Deploy (team runbook)
 

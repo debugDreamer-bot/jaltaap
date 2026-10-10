@@ -19,3 +19,11 @@ def heat_config() -> dict:
 
 def flood_config() -> dict:
     return load_config()["flood"]
+
+
+def crew_config() -> dict:
+    return load_config()["crew"]
+
+
+def air_config() -> dict:
+    return load_config()["air"]

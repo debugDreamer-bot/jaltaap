@@ -29,9 +29,57 @@ flood:
     - {factor: 0.50, next_1h_mm: 10, next_3h_mm: 20}
     - {factor: 0.25, next_1h_mm: 5}
   antecedent_bonus: {last_24h_mm: 64.5, add: 0.10}   # IMD heavy-rain day threshold
+  area_susceptibility: 0.6          # generic street with no listed hotspot (cities outside Delhi, any pin):
+                                    # heavy rain alone reaches HIGH, never SEVERE; only listed spots go higher
   levels: {SEVERE: 0.75, HIGH: 0.50, MEDIUM: 0.25}   # below 0.25 is LOW
   crowd:
     confirm_radius_m: 300
     confirm_window_h: 2
     min_confidence: 0.7
     expire_after_h: 3               # listed spots usually clear in 1 to 3 hours
+
+crew:
+  version: 1
+  # Site-supervisor schedule (risk/crew.py). Starting values derived from the band advice (spec 6.3):
+  # ORANGE "15 minutes of shade every hour", RED "stop heavy work", water "a glass every 20 minutes".
+  # Check against NDMA heat guidance before the video; record any change in DECISIONS.md.
+  work_rest_min:                 # [work, rest] minutes in each hour
+    heavy: {GREEN: [50, 10], YELLOW: [45, 15], ORANGE: [45, 15], RED: [0, 60]}
+    light: {GREEN: [55, 5], YELLOW: [50, 10], ORANGE: [45, 15], RED: [30, 30]}
+  water_ml_per_hour: {GREEN: 250, YELLOW: 750, ORANGE: 750, RED: 1000}   # a glass = 250 ml
+  glass_ml: 250
+  max_crew: 500
+  default_shift: {from: "08:00", to: "18:00"}
+
+air:
+  version: 1
+  # India National AQI (CPCB) sub-index breakpoints, 24-hour averages in µg/m³: [conc_lo, conc_hi, aqi_lo, aqi_hi].
+  # JalTaap estimates the AQI from modelled PM2.5 and PM10 only (official NAQI needs 3+ pollutants
+  # from monitoring stations), so it is always labelled an estimate.
+  pm2_5:
+    - [0, 30, 0, 50]
+    - [31, 60, 51, 100]
+    - [61, 90, 101, 200]
+    - [91, 120, 201, 300]
+    - [121, 250, 301, 400]
+    - [251, 380, 401, 500]
+  pm10:
+    - [0, 50, 0, 50]
+    - [51, 100, 51, 100]
+    - [101, 250, 101, 200]
+    - [251, 350, 201, 300]
+    - [351, 430, 301, 400]
+    - [431, 510, 401, 500]
+  categories:                        # upper AQI bound for each CPCB category
+    - {name: GOOD, max: 50}
+    - {name: SATISFACTORY, max: 100}
+    - {name: MODERATE, max: 200}
+    - {name: POOR, max: 300}
+    - {name: VERY_POOR, max: 400}
+    - {name: SEVERE, max: 500}
+  uv:                                # WHO UV index categories
+    - {name: LOW, max: 2.99}
+    - {name: MODERATE, max: 5.99}
+    - {name: HIGH, max: 7.99}
+    - {name: VERY_HIGH, max: 10.99}
+    - {name: EXTREME, max: 99}

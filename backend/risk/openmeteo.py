@@ -14,6 +14,8 @@ import httpx
 from common.ids import iso, now_ist
 
 FORECAST_URL = "https://api.open-meteo.com/v1/forecast"
+AIR_URL = "https://air-quality-api.open-meteo.com/v1/air-quality"   # free, no key, CC BY 4.0
+AIR_HOURLY = "pm2_5,pm10,uv_index"
 HOURLY = "temperature_2m,relative_humidity_2m,apparent_temperature,wet_bulb_temperature_2m,precipitation,precipitation_probability"
 DAILY = "temperature_2m_max,temperature_2m_min,precipitation_sum"
 CACHE_TTL_S = 30 * 60
@@ -26,12 +28,12 @@ class OpenMeteoError(RuntimeError):
     pass
 
 
-def _get(params: dict, attempts: int = 3) -> object:
+def _get(params: dict, attempts: int = 3, url: str = FORECAST_URL) -> object:
     """GET with retries. 429 (rate limit) backs off for seconds, honouring Retry-After when sent."""
     last: Exception | None = None
     for i in range(attempts):
         try:
-            r = httpx.get(FORECAST_URL, params=params, timeout=httpx.Timeout(15.0, connect=3.0))
+            r = httpx.get(url, params=params, timeout=httpx.Timeout(15.0, connect=3.0))
             if r.status_code == 429:
                 wait = float(r.headers.get("retry-after") or 3 * (2 ** i))
                 last = OpenMeteoError("open-meteo 429 rate limited")
@@ -98,6 +100,25 @@ def fetch_points(points: list[tuple[float, float]], *, forecast_days: int = 3, p
 def fetch_point(lat: float, lon: float, **kw) -> dict:
     """Personal lookups are rounded to 0.01 degree (about 1 km) so nearby users share the cache."""
     return fetch_points([(round(lat, 2), round(lon, 2))], **kw)[0]
+
+
+def fetch_air(lat: float, lon: float, use_cache: bool = True) -> dict:
+    """Hourly PM2.5, PM10 and UV index for a point (Open-Meteo Air Quality API, CAMS model).
+
+    Rounded to 0.05 degree: the air-quality model runs at about 10 km over India. Cached 30 minutes.
+    """
+    la, lo = round(lat * 20) / 20, round(lon * 20) / 20
+    key = f"air|{la:.2f},{lo:.2f}"
+    hit = _cache.get(key)
+    if use_cache and hit and time.time() - hit[0] < CACHE_TTL_S:
+        return hit[1][0]
+    raw = _get({"latitude": f"{la:.4f}", "longitude": f"{lo:.4f}", "hourly": AIR_HOURLY,
+                "timezone": "Asia/Kolkata", "past_days": 1, "forecast_days": 2}, url=AIR_URL)
+    h = raw.get("hourly", {}) if isinstance(raw, dict) else {}
+    out = {"fetched_at": iso(now_ist()), "time": h.get("time", []), "pm2_5": h.get("pm2_5", []),
+           "pm10": h.get("pm10", []), "uv_index": h.get("uv_index", [])}
+    _cache[key] = (time.time(), [out])
+    return out
 
 
 def clear_cache() -> None:

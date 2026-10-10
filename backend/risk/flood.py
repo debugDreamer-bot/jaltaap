@@ -110,6 +110,20 @@ def score_hotspot(
     }
 
 
+def score_area(*, rain_next_1h_mm: float, rain_next_3h_mm: float, rain_last_24h_mm: float,
+               cfg: dict | None = None) -> dict:
+    """Rain-driven waterlogging level for an area with no listed hotspot (any city, any pin).
+
+    Same formula as a hotspot, with the generic area_susceptibility in place of the listed-spot
+    susceptibility, so an unlisted street never scores above a listed underpass in the same rain.
+    """
+    cfg = cfg or flood_config()
+    risk = round(min(1.0, cfg["area_susceptibility"] * rain_factor(rain_next_1h_mm, rain_next_3h_mm, cfg)
+                     + antecedent_bonus(rain_last_24h_mm, cfg)), 4)
+    return {"level": level_for(risk, cfg), "risk": risk, "rain_next_1h_mm": round(rain_next_1h_mm, 1),
+            "rain_next_3h_mm": round(rain_next_3h_mm, 1), "rain_last_24h_mm": round(rain_last_24h_mm, 1)}
+
+
 def rain_windows(precip: list[float], index: int) -> tuple[float, float, float]:
     """From an hourly precipitation series, return (next 1h, next 3h, last 24h) at `index`.
 

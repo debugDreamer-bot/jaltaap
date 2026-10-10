@@ -1,9 +1,11 @@
 # JalTaap · जलताप
 
-**A WhatsApp-first heat and waterlogging safety copilot for Delhi's outdoor workers.**
-In summer it turns the forecast for a worker's exact spot into a humidity-aware safe-work plan
-in Hindi. In the monsoon it warns about street-level waterlogging, and it routes AI-verified photo
-reports to the agency that owns each spot.
+**A WhatsApp-first heat, waterlogging and water-access safety copilot for India's outdoor workers.**
+In summer it turns the forecast for a worker's exact spot (anywhere in India) into a
+humidity-aware safe-work plan in Hindi, and gives supervisors a work/rest roster for the whole
+crew. In the monsoon it warns about street-level waterlogging. It routes AI-verified photo reports,
+and corroborated tanker and supply complaints, to the agency that owns each spot. Delhi has full
+coverage; ten more cities are on the live map.
 
 Built on AWS by **Team DevCore** for Environmental Hacks (WeMakeDevs × AWS Bharat Builds Tour),
 Heat & Water track, 8–11 October 2026.
@@ -40,6 +42,12 @@ reanalysis. See [backtests/README.md](backtests/README.md).
 
 ![Backtest A](backtests/outputs/heat_2026.png)
 
+**Across India (Backtest D, modelled data):** _414 city-days across 63 Indian cities in 2026 were
+dangerous by humidity but never met a 40 °C heatwave rule_. Bhubaneswar had 50 dangerous days and a
+40 °C rule caught only 3; Kolkata had 42 and it caught none.
+
+![Backtest D](backtests/outputs/heat_cities_2026.png)
+
 ## What works today
 
 | Feature | Where | Status |
@@ -54,6 +62,16 @@ reanalysis. See [backtests/README.md](backtests/README.md).
 | Photo report → Bedrock vision verdict → map pin → officer queue | all channels | P1 |
 | Officer view with Cognito login and an AI action brief | web `/officer` | P1 |
 | 9 July 2026 storm replay and a humid-heat replay (13 July 2026) | web | P1 |
+| Pan-India: heat plans anywhere in India; 62 more cities (every million-plus city and state/UT capital, 178 cells) with area rain risk and alerts; researched hotspots in 10 big cities; OpenStreetMap hospitals and water points everywhere | all channels, web map city picker | P2 |
+| Crew heat plan: hourly heavy/light work, staggered rest groups, litres of water to carry; printable | all channels, web `/crew` | P2 |
+| Water-access reports (leak, tanker no-show, no supply, dirty water) by photo or text, routed to the water board | all channels, map layer | P2 |
+| Hindi voice notes in (Amazon Transcribe) and out (Amazon Polly, female voice Kajal); web Listen in a female Hindi voice | WhatsApp, Telegram, web | P2 |
+| Cedar policies for officer actions; reassign to another agency; read-only city control room | web `/officer` | P2 |
+| Worker screen for people who read little: one colour + icon answer, picture cards, read aloud in Hindi, Call 112 | web `/check` | P2 |
+| Air quality (India AQI estimate from PM2.5/PM10) and UV index with mask and head-cover advice | all channels, `/check`, dashboards | P2 |
+| Animated landing page with a live city dashboard (next 48 hours) | web `/` (map moved to `/map`) | P2 |
+| 3-day outlook, spoken shift reminders (water, shade, noon pause) and a picture-based "someone is unwell" check with Call 112 and the nearest hospital | web `/check`, `/unwell` | P2 |
+| Reporters get a message when an officer confirms, fixes or hands over their report | WhatsApp, Telegram | P2 |
 
 ## How it works
 
@@ -98,6 +116,9 @@ reanalysis. See [backtests/README.md](backtests/README.md).
 | **Strands Agents SDK** (AWS open source) | The agent: tool calling, language mirroring, one-line model swap |
 | **AWS SAM CLI** (AWS open source) | The whole backend as code in `template.yaml`; one-command deploy |
 | **Powertools for AWS Lambda** (AWS open source) | Structured logs, custom metrics (namespace `JalTaap`), tracing |
+| **Cedar** (AWS open source, via cedarpy) | Who may view, confirm, resolve or hand over a report (`backend/policies/reports.cedar`) |
+| Amazon Transcribe | Hindi and Indian-English voice notes to text |
+| Amazon Polly | Spoken Hindi replies (neural voice Kajal) |
 | Amazon Bedrock | Chat model with a Nova fallback; vision model for photo checks; officer briefs |
 | AWS Lambda | 10 functions: webhooks, agent worker, chat API, risk refresh, daily brief, alert sender, verifier, public and officer APIs |
 | Amazon API Gateway (HTTP API) | Webhooks, chat, map data, officer routes with a Cognito JWT authorizer |
@@ -119,17 +140,18 @@ reanalysis. See [backtests/README.md](backtests/README.md).
 template.yaml        AWS SAM: the whole backend
 layer/               DepsLayer (Linux wheels, built with a Makefile; no Docker needed)
 backend/
-  risk/              wetbulb.py, heat.py, flood.py, grid.py, openmeteo.py, imd.py, service.py, config/risk.yaml
+  risk/              wetbulb.py, heat.py, flood.py, crew.py, grid.py (cities), openmeteo.py, imd.py, service.py, config/risk.yaml
   agent/             agent.py, tools.py, prompts.py, location.py, session.py
-  common/            config, secrets (SSM), dynamo, i18n, geo, photo, vision, channels/ (whatsapp, telegram, ses)
+  common/            config, secrets (SSM), dynamo, i18n, geo, photo, vision, voice, water, authz (Cedar), channels/
+  policies/          reports.cedar and its schema
   handlers/          webhook_whatsapp, webhook_telegram, worker, chat_api, risk_refresh, daily_brief,
                      alert_sender, verifier, public_api, officer_api
   refdata/           bundled fallback copy of data/*.json
-  tests/             127 pytest tests (moto for AWS)
+  tests/             199 pytest tests (moto for AWS)
 web/                 React + Vite + TypeScript + MapLibre + Tailwind + i18next (see web/README.md)
-data/                seed CSVs, geocoding script, grid, GEOCODING_REVIEW.md
-backtests/           Backtests A, B, C and the replay builder, with outputs/
-evals/               26 agent eval cases and the runner
+data/                seed CSVs, geocoding scripts, grid, cities.json (build_cities.py), GEOCODING_REVIEW.md
+backtests/           Backtests A, B, C, D (11 cities) and the replay builder, with outputs/
+evals/               34 agent eval cases and the runner
 scripts/             put_secrets, check_bedrock, seed_s3, set_webhooks, smoke, dev_api
 docs/                api-contract.md, writeup.md, blog.md, architecture.png
 ```
@@ -138,7 +160,7 @@ docs/                api-contract.md, writeup.md, blog.md, architecture.png
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt
-.venv/bin/pytest                                   # 127 tests: risk engine, webhooks, worker, verifier, APIs
+.venv/bin/pytest                                   # 191 tests: risk engine, air quality, crews, Cedar, voice, water, webhooks, APIs
 .venv/bin/python scripts/dev_api.py --port 8787    # real handlers on moto + live Open-Meteo
 cd web && npm install && VITE_API_URL=http://127.0.0.1:8787 npm run dev
 ```
@@ -212,9 +234,9 @@ Useful: `sam logs -n AgentWorkerFn --stack-name jaltaap --tail`, and
 | Source | Use | Licence |
 |---|---|---|
 | [Open-Meteo](https://open-meteo.com/) Forecast, Historical Weather, Previous Runs, Geocoding APIs | Live forecasts, replays, backtests, locality geocoding | CC BY 4.0; free tier is non-commercial |
-| OpenStreetMap via [Nominatim](https://nominatim.org/) (one-time seeding, 1 request a second) and [OpenFreeMap](https://openfreemap.org/) (fallback map) | Hotspot and relief coordinates; base map | ODbL |
+| OpenStreetMap via [Nominatim](https://nominatim.org/) (one-time seeding, 1 request a second), the [Overpass API](https://overpass-api.de/) (hospitals and drinking water) and [OpenFreeMap](https://openfreemap.org/) (fallback map) | Hotspot and relief coordinates; base map | ODbL |
 | Amazon Location Service | Base map and geocoding | AWS service terms |
-| News reports linked in `data/*.seed.csv` | Hotspot and relief point names, years and evidence | Facts cited with links |
+| News reports and official notices linked in `data/*.seed.csv` (Delhi and 10+ more cities) | Hotspot and relief point names, years, evidence and quotes | Facts cited with links |
 
 Code dependencies (Python):
 
@@ -228,6 +250,7 @@ Code dependencies (Python):
 | PyYAML | MIT |
 | python-ulid | MIT |
 | Pillow | MIT-CMU |
+| cedarpy (Cedar policy engine bindings) | Apache-2.0 |
 | pytest | MIT |
 | moto | Apache-2.0 |
 | matplotlib (backtest charts) | PSF-based Matplotlib licence |
@@ -260,9 +283,20 @@ coding tools used are listed in [AI_USAGE.md](AI_USAGE.md).
 - **WhatsApp limits.** Free-form messages reach a user only within 24 hours of their last
   message. Proactive alerts outside that window need an approved WhatsApp template; Telegram has
   no such limit.
+- **Outside Delhi, coverage is thinner.** No listed waterlogging hotspots yet, so rain risk is
+  for the area (never above HIGH), not a specific underpass; few cooling points are on record, so
+  the agent gives helplines instead. Agency names outside Delhi need a teammate's check. The India
+  check is a rough bounding box.
+- **The AQI is an estimate**: modelled PM2.5 and PM10 (Open-Meteo / CAMS) through the CPCB
+  breakpoints, not station readings; official NAQI uses monitoring stations and 3+ pollutants.
+- **Crew work/rest minutes are starting values** derived from the band advice, not a medical or
+  legal standard; check them against NDMA guidance.
+- **Backtest D uses one city-centre point per city**, modelled data, and does not round.
 - **Not checked against live services yet:**
   - the Amazon Location Places v2 request shape;
   - the Bedrock model ids for this account;
-  - the Strands layer version.
-- **Not an official warning service.** Always follow IMD and Delhi government warnings. In an
+  - the Strands layer version;
+  - Amazon Transcribe (hi-IN language identification on WhatsApp Ogg/Opus notes) and the Polly
+    Kajal neural voice in ap-south-1.
+- **Not an official warning service.** Always follow IMD and your state and city government warnings. In an
   emergency, call **112**.

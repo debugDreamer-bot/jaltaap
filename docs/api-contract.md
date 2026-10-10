@@ -14,9 +14,22 @@ Base URL: `VITE_API_URL` in the web app, for example
 {"status": "ok", "version": "0.1.0", "time": "2026-10-09T17:30:00+05:30"}
 ```
 
-### `GET /risk/heat?time=<iso hour>`
+### `GET /cities`
+Covered cities (pan-India). Delhi has `tier: "full"` (hotspots, replays); the other ten have
+`tier: "heat_and_rain"`. `bounds` is the city grid's `[west, south, east, north]`.
+```json
+{"cities": [{"id": "mumbai", "name": "Mumbai", "name_hi": "मुंबई", "state": "Maharashtra",
+             "lat": 19.0728, "lon": 72.8826, "tier": "heat_and_rain",
+             "agencies": {"civic": "BMC", "water": "BMC"},
+             "agency_names": {"BMC": "Brihanmumbai Municipal Corporation (Hydraulic Engineer)"},
+             "bounds": [72.75, 18.95, 73.05, 19.25]}],
+ "india_bbox": {"min_lat": 6.5, "max_lat": 37.1, "min_lon": 68.1, "max_lon": 97.4}}
+```
+
+### `GET /risk/heat?time=<iso hour>&city=<id>`
 `time` is optional; default is the current hour. Valid values are listed in `hours_available`
-(now to +48 h).
+(now to +48 h). `city` is optional; without it every covered city's cells are returned (126).
+An unknown city is a 400.
 ```json
 {
   "time": "2026-10-09T17:00:00+05:30",
@@ -24,12 +37,15 @@ Base URL: `VITE_API_URL` in the web app, for example
   "data_updated_at": "2026-10-09T17:05:00+05:30",
   "hours_available": ["2026-10-09T17:00:00+05:30", "..."],
   "cells": [
-    {"id": "g_28.6_77.2", "lat": 28.6, "lon": 77.2, "bounds": [77.15, 28.55, 77.25, 28.65],
-     "band": "ORANGE", "temp_c": 38.2, "rh": 52, "wet_bulb_c": 28.4}
+    {"id": "g_28.6_77.2", "city": "delhi", "lat": 28.6, "lon": 77.2, "bounds": [77.15, 28.55, 77.25, 28.65],
+     "band": "ORANGE", "temp_c": 38.2, "rh": 52, "wet_bulb_c": 28.4,
+     "rain_next_3h_mm": 0.0, "area_flood_level": "LOW"}
   ]
 }
 ```
-`bounds` is `[west, south, east, north]`. Always 36 cells. `band` is GREEN, YELLOW, ORANGE or RED.
+`bounds` is `[west, south, east, north]`. Delhi has 36 cells, every other city 9. `band` is GREEN,
+YELLOW, ORANGE or RED. `area_flood_level` is the general rain-driven waterlogging level for a
+street with no listed hotspot (LOW to HIGH, never SEVERE).
 
 ### `GET /risk/flood?time=<iso hour>`
 ```json
@@ -83,6 +99,42 @@ Public pins. No user data, ever.
 ```
 Scenarios: `heat-2026-05-22`, `flood-2026-07-09`, `humid-heat-<yyyy-mm-dd>`.
 
+### `GET /now?lat=&lon=&label=`
+One screen of answers for any point in India (backs the worker view and dashboards). Rate-limited
+per IP. 503 if the forecast is unavailable.
+```json
+{"location": {"lat": 22.57, "lon": 88.36, "label": "Kolkata", "city": "Kolkata", "city_id": "kolkata", "coverage": "heat_and_rain"},
+ "now": {"time": "2026-10-09T21:00:00+05:30", "band": "GREEN", "temp_c": 28.1, "rh": 76, "wet_bulb_c": 24.0,
+         "rain_next_3h_mm": 0.0, "area_flood_level": "LOW", "uv_index": 0.0},
+ "today": {"date": "2026-10-09", "day_band": "YELLOW", "blocks": [...], "heavy_work_windows": [...],
+           "avoid_windows": [...], "noon_pause": null, "peak_hour": {...}, "advice_keys": [...]},
+ "air": {"aqi": 176, "category": "MODERATE", "dominant": "pm2_5", "estimate": true, "pm2_5": 83.4, "pm10": 92.0,
+         "advice_keys": ["air_moderate"]},
+ "uv": {"now": 0.0, "now_category": "LOW", "today_max": 4.6, "today_category": "MODERATE", "advice_keys": []},
+ "hours": [{"time": "...", "band": "GREEN", "temp_c": 28.1, "rh": 76, "wet_bulb_c": 24.0, "rain_next_3h_mm": 0.0,
+            "area_flood_level": "LOW", "uv_index": 0.0}],
+ "source": "open-meteo", "data_updated_at": "..."}
+```
+`air` is an India AQI estimate from modelled PM2.5/PM10 (CPCB breakpoints); it and `uv` are null
+when the air-quality API is unavailable.
+
+### `GET /water-issues`
+Water-access problems from the last 24 h that are corroborated (3 independent reporters in the
+same ~1 km cell) or photo-verified, grouped by cell and issue. No user data, no notes.
+```json
+{"window_h": 24, "min_reporters": 3, "issues": [
+  {"issue": "tanker_no_show", "lat": 28.5794, "lon": 77.0471, "reports": 4, "photo_verified": 0,
+   "agency": "DJB", "latest": "2026-10-09T18:10:00+05:30", "status": "corroborated"}]}
+```
+`issue` is leak, tanker_no_show, no_supply or dirty_water.
+
+### `GET /crew?lat=&lon=&size=&from=HH:MM&to=HH:MM&date=YYYY-MM-DD&heavy=1`
+Crew heat schedule (risk/crew.py) for any point in India, today to 2 days ahead. Rate-limited per
+IP. Returns the crew schedule: `blocks` and `hours` (band, activity heavy/light/rest, work and
+rest minutes, `rotation` of staggered rest groups, water per worker), `water`
+(`litres_per_worker`, `litres_total`, `glasses_per_worker`), `heavy_work_hours`, `noon_pause`,
+`worst_band`, `ors_needed`, plus `city` and `coverage`.
+
 ## Session-scoped (random `session_id`, rate-limited per session and IP)
 
 ### `POST /chat`
@@ -99,15 +151,26 @@ Response: `{"report_id": "01J...", "upload_url": "https://...", "content_type": 
 The browser then sends `PUT upload_url` with the JPEG body and `Content-Type: image/jpeg`.
 Poll `GET /reports/{report_id}/status` → `{"status": "pending|verified|needs_review|rejected", "verdict": {...}|null}`.
 
-## Officers (Cognito JWT, `officers` group; agency from the `custom:agency` attribute)
+## Officers (Cognito JWT; `officers` group with `custom:agency`, or `control_room` with `custom:city`)
+
+Every officer action is a Cedar authorization request (backend/policies/reports.cedar): officers
+see and act on their own agency's reports; only verified, confirmed or corroborated reports can be
+resolved; resolved and false reports stay closed; control rooms read every report in their city
+and change nothing. A refusal is a 403.
 
 ### `GET /officer/reports?status=<s>`
-Reports for the caller's agency, newest first, including `needs_review`. Same shape as public
-reports plus `confidence`, `note` and `photo_url` (presigned, 15 min).
+Reports the caller may view, newest first, including `needs_review`, `unverified` and
+`corroborated`. Same shape as public reports plus `confidence`, `note`, `photo_url` (presigned,
+15 min), `category` (flood or water), `issue`, `source` (photo or text), `corroborations` and
+`reassigned_from`.
 
 ### `PATCH /reports/{id}`
-Body `{"status": "confirmed" | "resolved" | "false"}`. Returns the updated report. Only the
-owning agency may change a report.
+Body `{"status": "confirmed" | "resolved" | "false"}` or, to hand the report to another agency,
+`{"agency": "<code>", "note": "..."}` (exactly one of the two). Returns `{"report": {...}}`.
+
+### `GET /officer/agencies`
+`{"agencies": ["BMC", "BWSSB", "DJB", "MCD", "NDMC", "PWD", ...]}`: every code a report can be
+handed to.
 
 ### `GET /briefs/{agency}`
 ```json

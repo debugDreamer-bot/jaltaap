@@ -33,8 +33,21 @@ engineers who own waterlogging spots.
   - Photo reports are checked by a Bedrock vision model and routed to the agency that owns the
     spot. Officers log in with Cognito to confirm, resolve or reject them and get an AI action
     brief that cites report ids.
-- **For judges.** A public map with a 36-cell heat layer (now to +48 h) and replays of
+- **For judges.** A public map with a heat layer (now to +48 h) and replays of
   22 May 2026 (heat), 9 July 2026 (storm) and 13 July 2026 (humid heat).
+- **Across India.**
+  - Heat plans work for any place name or pin in India.
+  - 62 more cities, every million-plus city and every state and UT capital, are on the live map
+    with area rain risk and alerts. Ten big cities also have researched waterlogging hotspots, and
+    every city has OpenStreetMap hospitals and drinking-water points. Reports go to each city's
+    own corporation and water body (Gurugram, Noida, Faridabad and Ghaziabad included).
+- **For supervisors.** A crew heat plan: hour by hour, heavy work only in safe windows, staggered
+  rest groups so the site never stops, and the litres of water to carry. It is printable from `/crew`.
+- **Water access.** Leaks, tanker no-shows, dry taps and dirty water can be reported by photo or
+  plain text. Three independent reporters in the same ~1 km area, or a verified photo, put the
+  problem on the map for the water board (the Delhi Jal Board in Delhi).
+- **Voice and permissions.** Hindi voice notes go in through Amazon Transcribe and replies come
+  back through Amazon Polly. Cedar policies decide who may resolve or hand over a report.
 
 ## How it works
 ![Architecture](architecture.png)
@@ -57,6 +70,8 @@ engineers who own waterlogging spots.
 - **Strands Agents SDK**: the agent, its tools and the model fallback.
 - **AWS SAM CLI**: the whole stack in one template.
 - **Powertools for AWS Lambda**: structured logs, custom metrics and tracing.
+- **Cedar**: officer permissions as policy files (only the owning agency acts; only verified
+  reports close; disputed spots can be handed over).
 
 **AWS services:**
 - **Amazon Bedrock**: chat with a Nova fallback, photo verification and officer briefs.
@@ -73,6 +88,7 @@ engineers who own waterlogging spots.
 - **Amazon SES**: officer emails.
 - **AWS Systems Manager Parameter Store**: secrets.
 - **AWS Budgets**: alerts at USD 10 and 25.
+- **Amazon Transcribe and Amazon Polly**: Hindi voice in and out.
 
 ## Data and sources
 - **Weather:** [Open-Meteo](https://open-meteo.com/) Forecast, Historical Weather and Previous
@@ -85,6 +101,9 @@ engineers who own waterlogging spots.
 - **Backtest A, humid heat.** "**11 days in 2026 were dangerous by humidity but never met a 40 °C
   heatwave rule**." This is for Safdarjung, 1 April to 31 July 2026, daytime hours. All 11 days
   were in July. The same point had 32 days at 40 °C or more and 43 JalTaap ORANGE-or-worse days.
+- **Backtest D, across India.** "**414 city-days across 63 Indian cities in 2026 were dangerous by
+  humidity but never met a 40 °C heatwave rule**." Bhubaneswar had 50 dangerous days and the 40 °C
+  rule caught 3; Kolkata 42 and it caught none. One city-centre point per city, modelled data.
 - **Backtest B, day-ahead.** Of 43 ORANGE-or-worse days, 35 were flagged a day ahead; 9 of 44
   day-ahead flags were false alarms. Both sides come from the same model family, so this
   measures forecast consistency, not real-world skill.
@@ -111,7 +130,9 @@ always computed by the tested engine.
 - **Official hotspot lists.** Add the official Traffic Police and PWD lists, and verify every pin.
 - **SMS.** Needs TRAI DLT registration, so it is the production path rather than part of the demo.
 - **WhatsApp templates.** Proactive alerts outside the 24-hour window need approved templates.
-- **Voice.** Hindi voice notes in and out with Amazon Transcribe and Polly.
+- **Hotspot lists for every city.** Outside Delhi, rain risk is for the area until official
+  hotspot lists are added; agency names there need checking.
+- **More languages.** Voice and copy in Bengali, Tamil, Marathi and Telugu for the new cities.
 - **Native review.** A native speaker should review all Hindi copy.
 
 ## Links

@@ -2,5 +2,31 @@
  "heat_missed_days": 11,
  "heat_missed_sentence": "11 days in 2026 were dangerous by humidity but never met a 40 C heatwave rule.",
  "chart": "/backtest_heat_2026.png",
- "qualifier": "Modelled data (Open-Meteo reanalysis grid point near Safdarjung), 1 Apr to 31 Jul 2026, daytime 06:00-19:59 IST."
+ "qualifier": "Modelled data (Open-Meteo reanalysis grid point near Safdarjung), 1 Apr to 31 Jul 2026, daytime 06:00-19:59 IST.",
+ "cities_humid_only_total": 414,
+ "cities_sentence": "414 city-days across 63 Indian cities in 2026 were dangerous by humidity but never met a 40 C heatwave rule.",
+ "cities_chart": "/backtest_heat_cities_2026.png",
+ "cities_top": [
+  {
+   "name": "Bhubaneswar",
+   "humid_only_days": 47,
+   "orange_plus_days": 50
+  },
+  {
+   "name": "Kolkata",
+   "humid_only_days": 42,
+   "orange_plus_days": 42
+  },
+  {
+   "name": "Puducherry",
+   "humid_only_days": 35,
+   "orange_plus_days": 35
+  },
+  {
+   "name": "Visakhapatnam",
+   "humid_only_days": 29,
+   "orange_plus_days": 33
+  }
+ ],
+ "cities_qualifier": "Modelled data (Open-Meteo reanalysis, one city-centre point per city), 1 Apr to 31 Jul 2026, daytime 06:00-19:59 IST."
 }

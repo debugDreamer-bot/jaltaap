@@ -67,4 +67,15 @@ def download_file(file_id: str, max_bytes: int = 10 * 1024 * 1024) -> tuple[byte
     url = f"https://api.telegram.org/file/bot{get_secret('telegram/bot_token')}/{result['file_path']}"
     data = httpx.get(url, timeout=httpx.Timeout(20.0, connect=3.0))
     data.raise_for_status()
-    return data.content, "image/jpeg"
+    ext = result["file_path"].rsplit(".", 1)[-1].lower()
+    mime = {"oga": "audio/ogg", "ogg": "audio/ogg", "opus": "audio/ogg", "mp3": "audio/mpeg", "m4a": "audio/mp4",
+            "wav": "audio/wav", "png": "image/png"}.get(ext, "image/jpeg")
+    return data.content, mime
+
+
+def send_audio(chat_id: str, mp3: bytes) -> dict:
+    """Send an MP3 (Amazon Polly) as a Telegram audio message."""
+    r = httpx.post(_api("sendAudio"), data={"chat_id": chat_id, "title": "JalTaap"},
+                   files={"audio": ("jaltaap.mp3", mp3, "audio/mpeg")}, timeout=httpx.Timeout(20.0, connect=3.0))
+    r.raise_for_status()
+    return r.json()

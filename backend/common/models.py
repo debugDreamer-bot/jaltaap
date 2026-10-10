@@ -28,7 +28,7 @@ class PhotoVerdict(BaseModel):
     model_config = ConfigDict(extra="forbid")
 
     relevant: bool
-    hazard_type: Literal["waterlogging", "pipe_leak", "tanker_issue", "heat_relief_issue", "other"]
+    hazard_type: Literal["waterlogging", "pipe_leak", "dirty_water", "tanker_issue", "heat_relief_issue", "other"]
     water_depth: Literal["none", "ankle", "knee", "waist_or_more", "unknown"]
     vehicles_stalled: bool
     electrical_hazard_visible: bool
@@ -61,4 +61,12 @@ class UploadUrlRequest(BaseModel):
 
 
 class StatusPatch(BaseModel):
-    status: Literal["confirmed", "resolved", "false"]
+    """Officer action: change status, or hand the report to another agency (reassign)."""
+    status: Literal["confirmed", "resolved", "false"] | None = None
+    agency: str | None = Field(default=None, min_length=2, max_length=16)
+    note: str | None = Field(default=None, max_length=280)
+
+    @field_validator("agency")
+    @classmethod
+    def upper(cls, v: str | None) -> str | None:
+        return v.upper() if v else v

@@ -15,7 +15,7 @@ from common.config import settings
 from common.ids import new_ulid, now_ist, user_hash
 from common.models import InboundMessage
 from common.obs import MetricUnit, logger, metrics, tracer
-from risk.grid import in_delhi
+from risk.grid import in_india
 
 STOP_WORDS = {"STOP", "STOP ALL", "UNSUBSCRIBE", "रोकें", "बंद करो", "BAND KARO"}
 REPORTS_PER_HOUR = 10
@@ -52,7 +52,8 @@ def _start_report(uh: str, msg: InboundMessage, image: bytes, lat: float, lon: f
     key = _raw_key(rid)
     dynamo.put_report({
         "pk": f"report#{rid}", "report_id": rid, "user_hash": uh, "channel": msg.channel, "s3_key": key,
-        "lat": lat, "lon": lon, "geohash7": geohash(lat, lon, 7), "geohash5": geohash(lat, lon, 5),
+        "lat": lat, "lon": lon, "geohash7": geohash(lat, lon, 7), "geohash6": geohash(lat, lon, 6),
+        "geohash5": geohash(lat, lon, 5),
         "status": "pending", "note": (msg.caption or "")[:280], "created_at": now_ist().isoformat(timespec="seconds"),
     })
     client("s3").put_object(Bucket=settings().bucket, Key=key, Body=image, ContentType="image/jpeg",
@@ -61,11 +62,44 @@ def _start_report(uh: str, msg: InboundMessage, image: bytes, lat: float, lon: f
 
 
 def _download(msg: InboundMessage) -> bytes:
+    return _download_with_type(msg)[0]
+
+
+def _download_with_type(msg: InboundMessage) -> tuple[bytes, str]:
     if msg.channel == "whatsapp":
         from common.channels import whatsapp
-        return whatsapp.download_media(msg.media_id)[0]
+        return whatsapp.download_media(msg.media_id)
     from common.channels import telegram
-    return telegram.download_file(msg.media_id)[0]
+    return telegram.download_file(msg.media_id)
+
+
+def _voice_turn(msg: InboundMessage, uh: str, user: dict) -> None:
+    """Voice note → Amazon Transcribe → agent → text reply plus an Amazon Polly audio reply."""
+    from common import voice
+    lang = user.get("lang", "hi")
+    audio, mime = _download_with_type(msg)
+    heard = voice.transcribe(audio, mime)
+    if not heard:
+        _send(msg, i18n.t("voice_unclear", lang))
+        return
+    text = heard["text"]
+    lang = i18n.detect_language(text)
+    if lang == "en" and heard["language"].startswith("hi"):
+        lang = "hinglish"   # Hindi speech transcribed in Roman script
+    metrics.add_metric(name="VoiceNotesIn", unit=MetricUnit.Count, value=1)
+    if text.upper() in STOP_WORDS or text in STOP_WORDS:
+        dynamo.delete_everything(uh)
+        _send(msg, i18n.t("stop_done", lang))
+        return
+    out = answer(user_hash=uh, channel=msg.channel, lang=lang, text=text,
+                 last_location=location_from_user(user), profile=user.get("profile"))
+    _send(msg, i18n.t("voice_heard", lang, text=text[:200]) + "\n" + out["reply"])
+    try:
+        mp3 = voice.synthesize(out["reply"], lang)
+        if mp3:
+            channels.send_audio(msg.channel, msg.channel_user_id, mp3)
+    except Exception:  # noqa: BLE001 - the text reply already went out
+        logger.exception("voice reply failed")
 
 
 @tracer.capture_method
@@ -90,8 +124,8 @@ def process(msg: InboundMessage) -> None:
         dynamo.update_user(uh, lang=lang)
 
     if msg.type == "location" and msg.lat is not None and msg.lon is not None:
-        if not in_delhi(msg.lat, msg.lon):
-            _send(msg, i18n.t("outside_delhi", lang))
+        if not in_india(msg.lat, msg.lon):
+            _send(msg, i18n.t("outside_india", lang))
             return
         dynamo.update_user(uh, last_geohash6=geohash(msg.lat, msg.lon, 6),
                            last_location_at=now_ist().isoformat(timespec="seconds"), last_location_label=msg.text or "")
@@ -127,7 +161,10 @@ def process(msg: InboundMessage) -> None:
         return
 
     if msg.type == "audio":
-        _send(msg, i18n.t("voice_not_supported", lang))
+        if not settings().voice_enabled or not msg.media_id:
+            _send(msg, i18n.t("voice_not_supported", lang))
+            return
+        _voice_turn(msg, uh, user)
         return
 
     if not text:

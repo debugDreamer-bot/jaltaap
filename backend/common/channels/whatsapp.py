@@ -105,3 +105,16 @@ def download_media(media_id: str, max_bytes: int = 10 * 1024 * 1024) -> tuple[by
     if len(data.content) > max_bytes:
         raise ValueError("media too large")
     return data.content, info.get("mime_type", "image/jpeg")
+
+
+def send_audio(to: str, mp3: bytes) -> dict:
+    """Upload an MP3 (Amazon Polly) as WhatsApp media, then send it as an audio message."""
+    phone_id = get_secret("whatsapp/phone_number_id")
+    up = httpx.post(_graph(f"{phone_id}/media"), headers=_headers(), timeout=httpx.Timeout(20.0, connect=3.0),
+                    data={"messaging_product": "whatsapp", "type": "audio/mpeg"},
+                    files={"file": ("reply.mp3", mp3, "audio/mpeg")})
+    up.raise_for_status()
+    payload = {"messaging_product": "whatsapp", "to": to, "type": "audio", "audio": {"id": up.json()["id"]}}
+    r = httpx.post(_graph(f"{phone_id}/messages"), json=payload, headers=_headers(), timeout=TIMEOUT)
+    r.raise_for_status()
+    return r.json()

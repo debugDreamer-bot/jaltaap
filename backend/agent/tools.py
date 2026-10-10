@@ -1,4 +1,5 @@
-"""Agent tools (spec 7.2). Each tool calls the risk engine or data layer, never another LLM.
+"""Agent tools (spec 7.2, extended for pan-India coverage, crews and water reports). Each tool calls
+the risk engine or data layer, never another LLM.
 
 The user's identity is bound in a closure per request: no tool takes a user id, phone number or
 chat id, so the model can never act on another user or message an arbitrary number.
@@ -11,15 +12,20 @@ from datetime import date as Date, timedelta
 from strands import tool
 
 from agent import location as loc
-from common import dynamo, i18n, refdata
+from common import dynamo, i18n, refdata, water
 from common.geo import directions_url, geohash, haversine_m, point_to_segment_m
+from common.config import settings
 from common.ids import now_ist
+from risk import grid as gridmod
 from risk import service
+from risk.crew import crew_schedule
 from risk.flood import LEVEL_ORDER, level_index
-from risk.grid import in_delhi
+from risk.grid import in_india
 
 PROFILE_FLAGS = ["heavy_work", "age_60_plus", "pregnant", "chronic_illness", "not_acclimatised"]
 HAZARDS = ["heat", "flood"]
+RELIEF_MAX_KM = 25          # never send someone to a cooling zone in another city
+HELPLINES = "112 (emergency), 1070 (state disaster control room), 1077 (district control room)"
 
 
 @dataclass
@@ -47,9 +53,23 @@ def _record(ctx: UserContext, name: str, result: dict) -> dict:
 
 
 def _check_point(lat: float, lon: float) -> dict | None:
-    if lat is None or lon is None or not in_delhi(float(lat), float(lon)):
-        return {"ok": False, "error": "location outside Delhi or missing; ask the user for a Delhi place name or pin"}
+    if lat is None or lon is None or not in_india(float(lat), float(lon)):
+        return {"ok": False, "error": "location outside India or missing; ask the user for a place name or pin in India"}
     return None
+
+
+def _coverage(lat: float, lon: float) -> dict:
+    cov = gridmod.coverage(lat, lon)
+    return {"city": cov["city_name"], "coverage": cov["tier"]}
+
+
+def _area_rain(lat: float, lon: float) -> dict:
+    """General rain-driven waterlogging level at a point (no listed hotspot), from the same engine."""
+    series = service.point_series([(lat, lon)])[0]
+    row = service.heat_hours(series, now_ist(), 1)[0]
+    return {"area": {"level": row["area_flood_level"], "rain_next_3h_mm": row["rain_next_3h_mm"],
+                     "data_updated_at": series["fetched_at"]},
+            "data_updated_at": series["fetched_at"]}
 
 
 def build_tools(ctx: UserContext) -> list:
@@ -57,23 +77,27 @@ def build_tools(ctx: UserContext) -> list:
 
     @tool
     def resolve_location(text: str) -> dict:
-        """Find a place in Delhi from its name (area, landmark, underpass, market).
+        """Find a place in India from its name (area, landmark, underpass, market, city).
 
-        Returns {found, lat, lon, label, confidence, source}. Returns found=false outside Delhi or when
-        the place is unknown; then ask the user for a location pin instead of guessing.
+        Include the city in `text` when the user named one ("Andheri, Mumbai"); without a city, Delhi and
+        then the user's last city are preferred. Returns {found, lat, lon, label, city, coverage,
+        confidence, source}. Returns found=false outside India or when the place is unknown; then ask
+        the user for a location pin instead of guessing.
         """
-        result = loc.resolve(text)
+        result = loc.resolve(text, near=ctx.last_location)
         if result.get("found"):
             ctx.last_location = {"lat": result["lat"], "lon": result["lon"], "label": result["label"]}
         return _record(ctx, "resolve_location", result)
 
     @tool
     def get_heat_plan(lat: float, lon: float, date: str = "", profile: list[str] | None = None) -> dict:
-        """Hourly heat plan for one Delhi location and date (YYYY-MM-DD, default today in IST; up to 2 days ahead).
+        """Hourly heat plan for one location in India and date (YYYY-MM-DD, default today in IST; up to 2 days ahead).
 
         profile may include: heavy_work, age_60_plus, pregnant, chronic_illness, not_acclimatised (only if the
         user said so). Returns the day band, time blocks with bands, heavy_work_windows, avoid_windows, the
-        noon pause, advice lines in the user's language and a footer line to end the reply with.
+        noon pause, advice lines in the user's language and a footer line to end the reply with. For today it
+        also returns `air` (an India AQI estimate with advice, e.g. wear an N95 mask) and `uv` (today's peak
+        UV index with advice) when available.
         """
         bad = _check_point(lat, lon)
         if bad:
@@ -95,6 +119,7 @@ def build_tools(ctx: UserContext) -> list:
         result = {
             "ok": True,
             "location": plan["location"],
+            **_coverage(lat, lon),
             "date": plan["date"],
             "day_band": plan["day_band"],
             "day_band_words": i18n.band_word(plan["day_band"], lang),
@@ -109,20 +134,36 @@ def build_tools(ctx: UserContext) -> list:
             "data_updated_at": plan["data_updated_at"],
             "footer": i18n.footer(plan["data_updated_at"], lang),
         }
+        if d == today:   # air quality and UV for today (fail-soft: heat still answers without them)
+            try:
+                extra = service.air_now(lat, lon)
+                if extra["air"]:
+                    a = extra["air"]
+                    result["air"] = {"aqi_estimate": a["aqi"], "category": a["category"],
+                                     "category_words": i18n.aqi_word(a["category"], lang),
+                                     "advice": i18n.advice(a["advice_keys"], lang)}
+                if extra["uv"] and extra["uv"]["today_max"] is not None:
+                    result["uv"] = {"today_max": extra["uv"]["today_max"], "category": extra["uv"]["today_category"],
+                                    "advice": i18n.advice(extra["uv"]["advice_keys"], lang)}
+            except Exception:  # noqa: BLE001
+                pass
         return _record(ctx, "get_heat_plan", result)
 
     @tool
     def find_relief(lat: float, lon: float, kind: str = "any", limit: int = 3) -> dict:
-        """Nearest cooling zones, water points or hospitals to a Delhi location.
+        """Nearest cooling zones, water points or hospitals to a location (within 25 km).
 
         kind is one of: cooling, water, hospital, any. Returns up to `limit` points (max 5) with name, kind,
-        distance_m, status and a Google Maps directions_url.
+        distance_m, status and a Google Maps directions_url. Outside Delhi few points are on record yet:
+        then it returns ok=false with the national helplines to give instead.
         """
         bad = _check_point(lat, lon)
         if bad:
             return _record(ctx, "find_relief", bad)
         kind = kind if kind in ("cooling", "water", "hospital") else "any"
-        pts = [p for p in refdata.relief_points() if kind == "any" or p["kind"] == kind]
+        pts = [p for p in refdata.relief_points() if (kind == "any" or p["kind"] == kind)
+               and p.get("status") != "planned"   # announced but not confirmed built: never send someone there
+               and haversine_m(lat, lon, p["lat"], p["lon"]) <= RELIEF_MAX_KM * 1000]
         ranked = sorted(pts, key=lambda p: haversine_m(lat, lon, p["lat"], p["lon"]))[: max(1, min(int(limit), 5))]
         result = {"ok": True, "points": [{
             "name": p["name"], "kind": p["kind"], "status": p.get("status"),
@@ -130,7 +171,9 @@ def build_tools(ctx: UserContext) -> list:
             "directions_url": directions_url(p["lat"], p["lon"]),
         } for p in ranked]}
         if not ranked:
-            result = {"ok": False, "error": "no relief points of that kind on record"}
+            result = {"ok": False, "error": f"no {kind if kind != 'any' else 'relief'} points on record within "
+                                            f"{RELIEF_MAX_KM} km; suggest shade nearby and give the helplines",
+                      "helplines": HELPLINES}
         return _record(ctx, "find_relief", result)
 
     def _flood_near(lat: float, lon: float, radius_m: int) -> tuple[list[dict], str | None]:
@@ -152,10 +195,12 @@ def build_tools(ctx: UserContext) -> list:
 
     @tool
     def get_flood_risk(lat: float, lon: float, radius_m: int = 3000, hours: int = 3) -> dict:
-        """Waterlogging risk at listed Delhi hotspots near a location for the next 3 hours.
+        """Waterlogging risk near a location for the next 3 hours.
 
-        Returns hotspots ranked by level (CONFIRMED > SEVERE > HIGH > MEDIUM > LOW) with the owning agency,
-        expected rain in the next 1 and 3 hours, verified report count and distance.
+        In Delhi: listed hotspots ranked by level (CONFIRMED > SEVERE > HIGH > MEDIUM > LOW) with the owning
+        agency, expected rain in the next 1 and 3 hours, verified report count and distance. Elsewhere (no
+        listed hotspots): `area` gives the general rain-driven level for streets at that point, which never
+        goes above HIGH; say it is for the area, not for a specific underpass.
         """
         bad = _check_point(lat, lon)
         if bad:
@@ -165,7 +210,14 @@ def build_tools(ctx: UserContext) -> list:
         except Exception:  # noqa: BLE001
             return _record(ctx, "get_flood_risk", {"ok": False, "error": "rain data unavailable right now"})
         if not rows:
-            return _record(ctx, "get_flood_risk", {"ok": True, "hotspots": [], "note": "no listed hotspots in range"})
+            try:
+                area = _area_rain(lat, lon)
+            except Exception:  # noqa: BLE001
+                return _record(ctx, "get_flood_risk", {"ok": False, "error": "rain data unavailable right now"})
+            area["area"]["level_words"] = i18n.level_word(area["area"]["level"], lang)
+            return _record(ctx, "get_flood_risk", {"ok": True, "hotspots": [], **_coverage(lat, lon),
+                                                   "note": "no listed hotspots in range", **area,
+                                                   "footer": i18n.footer(area["data_updated_at"], lang)})
         rows.sort(key=lambda r: (-level_index(r["level"]), r["distance_m"]))
         result = {"ok": True, "horizon_h": 3, "hotspots": [{
             "name": r["name"], "agency": r["agency"], "level": r["level"],
@@ -179,14 +231,16 @@ def build_tools(ctx: UserContext) -> list:
 
     @tool
     def check_route(origin: str, destination: str) -> dict:
-        """Waterlogging hotspots within 500 m of the straight line between two Delhi places (names).
+        """Waterlogging hotspots within 500 m of the straight line between two places (names) in one city.
 
         Returns the hotspots on the way, the worst level, and a short hint. The line is straight, not the
-        road route, so say "on or near the way".
+        road route, so say "on or near the way". Where no hotspots are listed (outside Delhi), returns the
+        general area rain level at both ends instead.
         """
-        a, b = loc.resolve(origin), loc.resolve(destination)
+        a = loc.resolve(origin, near=ctx.last_location)
+        b = loc.resolve(destination, near=a if a.get("found") else ctx.last_location)
         if not (a.get("found") and b.get("found")):
-            return _record(ctx, "check_route", {"ok": False, "error": "could not find one of the places in Delhi",
+            return _record(ctx, "check_route", {"ok": False, "error": "could not find one of the places in India",
                                                 "origin_found": a.get("found", False), "destination_found": b.get("found", False)})
         pa, pb = (a["lat"], a["lon"]), (b["lat"], b["lon"])
         near = [s for s in refdata.hotspots() if point_to_segment_m(s["lat"], s["lon"], pa, pb) <= 500]
@@ -197,7 +251,15 @@ def build_tools(ctx: UserContext) -> list:
             rows, updated = _flood_near(mid[0], mid[1], int(radius))
             ids = {s["id"] for s in near}
             rows = [r for r in rows if r["id"] in ids]
-        worst = max((r["level"] for r in rows), key=level_index, default="LOW")
+        area_levels = None
+        if not near:
+            try:
+                area_levels = {"origin": _area_rain(*pa)["area"], "destination": _area_rain(*pb)["area"]}
+            except Exception:  # noqa: BLE001
+                return _record(ctx, "check_route", {"ok": False, "error": "rain data unavailable right now"})
+            updated = area_levels["origin"]["data_updated_at"]
+        worst = max([r["level"] for r in rows] + [v["level"] for v in (area_levels or {}).values()],
+                    key=level_index, default="LOW")
         hint = {"en": "Avoid the spots marked HIGH or worse; wait for the rain to pass or take a parallel road.",
                 "hi": "ज़्यादा या गंभीर खतरे वाली जगहों से बचें; बारिश रुकने का इंतज़ार करें या दूसरी सड़क लें।",
                 "hinglish": "HIGH ya usse zyada khatre wali jagah se bachein; baarish rukne ka intezaar karein ya doosri sadak lein."}
@@ -207,6 +269,9 @@ def build_tools(ctx: UserContext) -> list:
                                            "rain_next_3h_mm": r["rain_next_3h_mm"]} for r in
                                           sorted(rows, key=lambda r: -level_index(r["level"]))],
                   "hint": hint[lang] if level_index(worst) >= LEVEL_ORDER.index("HIGH") else None}
+        if area_levels:
+            result["area_rain"] = area_levels
+            result["note"] = "no listed hotspots on this route; levels are general area rain risk"
         if updated:
             result["data_updated_at"] = updated
             result["footer"] = i18n.footer(updated, lang)
@@ -235,8 +300,8 @@ def build_tools(ctx: UserContext) -> list:
             return _record(ctx, "manage_subscription", {"ok": False, "error": "unknown action"})
         point = (lat, lon) if lat is not None and lon is not None else (
             (ctx.last_location["lat"], ctx.last_location["lon"]) if ctx.last_location else None)
-        if not point or not in_delhi(*point):
-            return _record(ctx, "manage_subscription", {"ok": False, "error": "need a Delhi location; ask for a pin"})
+        if not point or not in_india(*point):
+            return _record(ctx, "manage_subscription", {"ok": False, "error": "need a location in India; ask for a pin"})
         area = geohash(point[0], point[1], 5)
         for h in hz:
             dynamo.subscribe(ctx.user_hash, area, h)
@@ -244,4 +309,74 @@ def build_tools(ctx: UserContext) -> list:
         msg = i18n.t("subscribed", lang, hazards=", ".join(hz))
         return _record(ctx, "manage_subscription", {"ok": True, "subscribed": hz, "message": msg})
 
-    return [resolve_location, get_heat_plan, find_relief, get_flood_risk, check_route, manage_subscription]
+    @tool
+    def get_crew_schedule(lat: float, lon: float, crew_size: int, shift_from: str = "08:00", shift_to: str = "18:00",
+                          date: str = "", heavy_work: bool = True) -> dict:
+        """Hour-by-hour heat schedule for a whole work crew at one location (for site supervisors).
+
+        crew_size is the number of workers (1 to 500). shift_from/shift_to are HH:MM in IST on one day
+        (default 08:00 to 18:00). heavy_work=false for light work only. Returns blocks with the activity
+        (heavy, light or rest), work and rest minutes per hour, how many rest groups to stagger, water per
+        worker, total litres to carry, whether ORS is needed, and print_url for a printable roster.
+        """
+        bad = _check_point(lat, lon)
+        if bad:
+            return _record(ctx, "get_crew_schedule", bad)
+        today = now_ist().date()
+        try:
+            d = Date.fromisoformat(date) if date else today
+        except ValueError:
+            d = today
+        if not (today <= d <= today + timedelta(days=2)):
+            return _record(ctx, "get_crew_schedule", {"ok": False, "error": "crew schedules cover today to 2 days ahead"})
+        label = (ctx.last_location or {}).get("label") or f"{lat:.2f}, {lon:.2f}"
+        try:
+            plan = service.heat_plan(lat, lon, label=label, day=d.isoformat())
+            sched = crew_schedule(plan, crew_size=crew_size, shift_from=shift_from, shift_to=shift_to,
+                                  heavy_work=bool(heavy_work))
+        except ValueError as err:
+            return _record(ctx, "get_crew_schedule", {"ok": False, "error": str(err)})
+        except Exception:  # noqa: BLE001
+            return _record(ctx, "get_crew_schedule", {"ok": False, "error": "forecast data unavailable right now"})
+        origin = settings().web_origin
+        result = {
+            "ok": True, **_coverage(lat, lon),
+            **{k: sched[k] for k in ("date", "crew_size", "shift", "worst_band", "noon_pause", "heavy_work_hours",
+                                     "no_heavy_work", "blocks", "water", "ors_needed", "work_minutes_per_worker")},
+            "worst_band_words": i18n.band_word(sched["worst_band"], lang),
+            "data_updated_at": sched["data_updated_at"],
+            "footer": i18n.footer(sched["data_updated_at"], lang),
+        }
+        if origin.startswith("http"):
+            result["print_url"] = (f"{origin}/crew?lat={lat:.3f}&lon={lon:.3f}&size={sched['crew_size']}"
+                                   f"&from={sched['shift']['from']}&to={sched['shift']['to']}&date={sched['date']}")
+        return _record(ctx, "get_crew_schedule", result)
+
+    @tool
+    def report_water_issue(issue: str, note: str = "", lat: float | None = None, lon: float | None = None) -> dict:
+        """File a drinking-water problem the user describes, for the city's water agency.
+
+        issue is one of: leak (pipe or main leaking), tanker_no_show (water tanker did not come),
+        no_supply (taps dry), dirty_water (muddy or smelly supply). note is a short description in the
+        user's words (no names or phone numbers). lat/lon default to the user's last shared location.
+        Reports are anonymous; three independent reports from the same ~1 km area within 24 hours mark
+        the problem as corroborated for the agency and the public map. For a leak, also suggest a photo.
+        """
+        if issue not in water.ISSUES:
+            return _record(ctx, "report_water_issue", {"ok": False, "error": f"issue must be one of {list(water.ISSUES)}"})
+        point = (lat, lon) if lat is not None and lon is not None else (
+            (ctx.last_location["lat"], ctx.last_location["lon"]) if ctx.last_location else None)
+        if not point or not in_india(*point):
+            return _record(ctx, "report_water_issue", {"ok": False, "error": "need the location; ask for a place name or pin"})
+        if not dynamo.rate_limit(f"reports#{ctx.user_hash}", 10, 3600):
+            return _record(ctx, "report_water_issue", {"ok": False, "error": "too many reports in the last hour"})
+        out = water.file_text_report(user_hash=ctx.user_hash, channel=ctx.channel, lat=point[0], lon=point[1],
+                                     issue=issue, note=note)
+        key = "water_report_corroborated" if out["status"] == "corroborated" else (
+            "water_report_duplicate" if out["duplicate"] else "water_report_filed")
+        name = gridmod.agency_name(out["agency"], *point)
+        return _record(ctx, "report_water_issue", {
+            "ok": True, **out, "agency_name": name, "message": i18n.t(key, lang, agency=name, n=out["reporters"])})
+
+    return [resolve_location, get_heat_plan, find_relief, get_flood_risk, check_route, manage_subscription,
+            get_crew_schedule, report_water_issue]

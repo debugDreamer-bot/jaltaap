@@ -12,7 +12,7 @@ from common.ids import user_hash
 from common.models import ChatRequest
 from common.obs import MetricUnit, logger, metrics, tracer
 from common.secrets import get_secret
-from risk.grid import in_delhi
+from risk.grid import in_india
 
 PER_SESSION_PER_MIN = 8
 PER_IP_PER_MIN = 30
@@ -35,8 +35,8 @@ def handler(event, context):
     lang = i18n.detect_language(req.message)
     loc = None
     if req.lat is not None and req.lon is not None:
-        if not in_delhi(req.lat, req.lon):
-            return respond(200, {"reply": i18n.t("outside_delhi", lang), "data_updated_at": None})
+        if not in_india(req.lat, req.lon):
+            return respond(200, {"reply": i18n.t("outside_india", lang), "data_updated_at": None})
         loc = {"lat": req.lat, "lon": req.lon, "label": None}
     out = answer(user_hash=uh, channel="web", lang=lang, text=req.message, last_location=loc)
     metrics.add_metric(name="RepliesOut", unit=MetricUnit.Count, value=1)

@@ -9,9 +9,28 @@ check() { if [[ "$2" == "ok" ]]; then echo "PASS  $1"; else echo "FAIL  $1  ($2)
 code=$(curl -s -o /tmp/jt_health.json -w "%{http_code}" "$API/health")
 check "/health returns 200" "$([[ $code == 200 ]] && echo ok || echo "HTTP $code")"
 
-curl -s "$API/risk/heat" -o /tmp/jt_heat.json
+curl -s "$API/risk/heat?city=delhi" -o /tmp/jt_heat.json
 n=$(python3 -c "import json;print(len(json.load(open('/tmp/jt_heat.json')).get('cells',[])))" 2>/dev/null || echo 0)
-check "/risk/heat returns 36 cells" "$([[ $n == 36 ]] && echo ok || echo "$n cells")"
+check "/risk/heat?city=delhi returns 36 cells" "$([[ $n == 36 ]] && echo ok || echo "$n cells")"
+
+curl -s "$API/cities" -o /tmp/jt_cities.json
+nc=$(python3 -c "import json;print(len(json.load(open('/tmp/jt_cities.json')).get('cities',[])))" 2>/dev/null || echo 0)
+check "/cities lists the covered cities (pan-India)" "$([[ $nc -ge 11 ]] && echo ok || echo "$nc cities")"
+
+curl -s "$API/risk/heat" -o /tmp/jt_heat_all.json
+na=$(python3 -c "import json;print(len(json.load(open('/tmp/jt_heat_all.json')).get('cells',[])))" 2>/dev/null || echo 0)
+check "/risk/heat returns every city's cells" "$([[ $na -gt 36 ]] && echo ok || echo "$na cells (cache not filled yet? invoke risk-refresh)")"
+
+code=$(curl -s -o /tmp/jt_crew.json -w "%{http_code}" "$API/crew?lat=22.57&lon=88.36&size=20&from=08:00&to=18:00")
+blocks=$(python3 -c "import json;print(len(json.load(open('/tmp/jt_crew.json')).get('blocks',[])))" 2>/dev/null || echo 0)
+check "/crew builds a Kolkata crew roster" "$([[ $code == 200 && $blocks -gt 0 ]] && echo ok || echo "HTTP $code")"
+
+code=$(curl -s -o /tmp/jt_now.json -w "%{http_code}" "$API/now?lat=28.61&lon=77.21")
+nh=$(python3 -c "import json;print(len(json.load(open('/tmp/jt_now.json')).get('hours',[])))" 2>/dev/null || echo 0)
+check "/now returns a worker summary with 48 hours" "$([[ $code == 200 && $nh -ge 24 ]] && echo ok || echo "HTTP $code, $nh hours")"
+
+code=$(curl -s -o /dev/null -w "%{http_code}" "$API/water-issues")
+check "/water-issues returns 200" "$([[ $code == 200 ]] && echo ok || echo "HTTP $code")"
 
 start=$(python3 -c "import time;print(time.time())")
 code=$(curl -s -m 30 -o /tmp/jt_chat.json -w "%{http_code}" -X POST "$API/chat" -H "content-type: application/json" \

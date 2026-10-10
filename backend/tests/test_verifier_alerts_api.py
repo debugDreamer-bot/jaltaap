@@ -159,16 +159,28 @@ def test_health_and_unknown_route(aws, ctx):
     assert handler(_http("GET /nope", ctx), ctx)["statusCode"] == 404
 
 
-def test_risk_heat_from_cache_has_36_cells(aws, ctx):
+def test_risk_heat_from_snapshot_all_cities_and_one_city(aws, ctx):
     from common.ids import hour_iso
     from handlers.public_api import handler
+    from handlers.risk_refresh import pack
     from risk.grid import cells
     hour = hour_iso(now_ist())
-    dynamo.put_risk_items([{"pk": f"heat#{c['id']}", "sk": hour, "band": "YELLOW", "temp_c": 37.5, "rh": 30,
-                            "wet_bulb_c": 24.0} for c in cells()] +
-                          [{"pk": "meta#heat", "sk": "latest", "hours_available": [hour], "data_updated_at": hour}])
+    row = {"band": "YELLOW", "temp_c": 37.5, "rh": 30, "wet_bulb_c": 24.0, "rain_next_3h_mm": 0.0, "area_flood_level": "LOW"}
+    dynamo.put_risk_items([{"pk": "heatgrid", "sk": hour, "cells": {c["id"]: pack(row) for c in cells()}},
+                           {"pk": "meta#heat", "sk": "latest", "hours_available": [hour], "data_updated_at": hour}])
     body = json.loads(handler(_http("GET /risk/heat", ctx), ctx)["body"])
-    assert len(body["cells"]) == 36 and body["cells"][0]["band"] == "YELLOW" and body["data_updated_at"] == hour
+    assert len(body["cells"]) == len(cells()) and body["cells"][0]["band"] == "YELLOW" and body["data_updated_at"] == hour
+    assert body["cells"][0]["area_flood_level"] == "LOW" and body["cells"][0]["city"] == "delhi"
+    mumbai = json.loads(handler(_http("GET /risk/heat", ctx, query={"city": "mumbai"}), ctx)["body"])
+    assert len(mumbai["cells"]) == 9 and {c["city"] for c in mumbai["cells"]} == {"mumbai"}
+    assert handler(_http("GET /risk/heat", ctx, query={"city": "atlantis"}), ctx)["statusCode"] == 400
+
+
+def test_cities_index(aws, ctx):
+    from handlers.public_api import handler
+    body = json.loads(handler(_http("GET /cities", ctx), ctx)["body"])
+    ids = [c["id"] for c in body["cities"]]
+    assert ids[0] == "delhi" and "mumbai" in ids and len(body["cities"][1]["bounds"]) == 4
 
 
 def test_replay_name_is_validated(aws, ctx):
@@ -179,9 +191,9 @@ def test_replay_name_is_validated(aws, ctx):
     assert res["statusCode"] == 200 and json.loads(res["body"])["scenario"] == "heat-2026-05-22"
 
 
-def test_upload_url_rejects_outside_delhi_and_creates_pending(aws, ctx):
+def test_upload_url_rejects_outside_india_and_creates_pending(aws, ctx):
     from handlers.public_api import handler
-    bad = handler(_http("POST /reports/upload-url", ctx, body={"session_id": "abcdefgh12", "lat": 19.0, "lon": 72.8}), ctx)
+    bad = handler(_http("POST /reports/upload-url", ctx, body={"session_id": "abcdefgh12", "lat": 51.5, "lon": -0.12}), ctx)
     assert bad["statusCode"] == 400
     ok = json.loads(handler(_http("POST /reports/upload-url", ctx,
                                   body={"session_id": "abcdefgh12", "lat": 28.66, "lon": 77.15}), ctx)["body"])

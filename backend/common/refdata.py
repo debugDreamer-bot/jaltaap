@@ -1,4 +1,4 @@
-"""Static reference data: grid, hotspots and relief points.
+"""Static reference data: grid, hotspots and relief points (Delhi seed, other cities, OpenStreetMap).
 
 Primary copy lives in S3 under data/*.json (uploaded by scripts/seed_s3.sh). A copy is bundled
 in backend/refdata/ as a fallback so the API works even if S3 is unreachable.
@@ -37,12 +37,27 @@ def _load(name: str) -> list:
     return data
 
 
+def _located(*names: str) -> list[dict]:
+    """Rows from several files, without rows that have no coordinates; first file wins on duplicate ids."""
+    seen, out = set(), []
+    for name in names:
+        for row in _load(name):
+            if row.get("lat") is None or row.get("lon") is None or row.get("id") in seen:
+                continue
+            seen.add(row.get("id"))
+            out.append(row)
+    return out
+
+
 def hotspots() -> list[dict]:
-    return [h for h in _load("hotspots") if h.get("lat") is not None and h.get("lon") is not None]
+    """Delhi's listed hotspots plus researched hotspots in other cities (data/hotspots_cities.json)."""
+    return _located("hotspots", "hotspots_cities")
 
 
 def relief_points() -> list[dict]:
-    return [p for p in _load("relief_points") if p.get("lat") is not None and p.get("lon") is not None]
+    """Delhi seed points, researched relief places in other cities, and OpenStreetMap hospitals and
+    drinking-water points for every covered city."""
+    return _located("relief_points", "relief_cities", "relief_osm")
 
 
 def clear() -> None:

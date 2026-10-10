@@ -8,7 +8,7 @@ from __future__ import annotations
 import json
 import urllib.parse
 
-from common import channels, dynamo, i18n, photo, refdata, vision
+from common import channels, dynamo, i18n, photo, refdata, vision, water
 from common.aws import client
 from common.config import settings
 from common.geo import haversine_m
@@ -16,7 +16,7 @@ from common.ids import now_ist
 from common.obs import MetricUnit, logger, metrics, tracer
 from risk.config_loader import flood_config
 from risk.flood import level_index
-from risk.grid import in_delhi
+from risk.grid import in_india
 
 MIN_CONFIDENCE = 0.7
 MATCH_RADIUS_M = 300
@@ -129,7 +129,7 @@ def verify(bucket: str, key: str, bedrock=None) -> dict:
         _notify(report, "photo_rejected", reason_key=reason_key)
         return {"status": "rejected", "reason": reason_key}
 
-    if not in_delhi(report["lat"], report["lon"]):
+    if not in_india(report["lat"], report["lon"]):
         return reject("reason_outside")
     if photo.too_old(img, now):
         return reject("reason_old")
@@ -146,9 +146,19 @@ def verify(bucket: str, key: str, bedrock=None) -> dict:
     status, conf = decide(v, report)
     thumb_key = f"reports/thumb/{report_id}.jpg"
     s3.put_object(Bucket=bucket, Key=thumb_key, Body=photo.thumbnail(img), ContentType="image/jpeg")
-    agency = spot["agency"] if spot and spot.get("agency") not in (None, "UNKNOWN") else "MCD"
+    is_water = v is not None and v.hazard_type in water.PHOTO_TYPES
+    if is_water:   # leaks, dirty water and tanker queues go to the water agency, not the road agency
+        agency, spot = water.water_agency(report["lat"], report["lon"]), None
+    elif spot and spot.get("agency") not in (None, "UNKNOWN"):
+        agency = spot["agency"]
+    else:
+        agency = water.civic_agency(report["lat"], report["lon"])   # MCD in Delhi, the city corporation elsewhere
     fields = {"status": status, "confidence": conf, "phash": h, "thumb_key": thumb_key, "agency": agency,
-              "hotspot_id": spot["id"] if spot else "", "verified_at": now.isoformat(timespec="seconds")}
+              "hotspot_id": spot["id"] if spot else "", "verified_at": now.isoformat(timespec="seconds"),
+              "category": "water" if is_water else "flood", "source": "photo",
+              "geohash6": report.get("geohash6") or report["geohash7"][:6]}
+    if is_water:
+        fields["issue"] = water.PHOTO_TYPES[v.hazard_type]
     if v is not None:
         fields["verdict"] = v.model_dump()
     updated = dynamo.update_report(report_id, **fields)
@@ -158,7 +168,8 @@ def verify(bucket: str, key: str, bedrock=None) -> dict:
         if spot:
             _mark_hotspot_confirmed(spot["id"])
         _notify(report, "photo_verified", summary={"en": v.summary_en, "hi": v.summary_hi}, agency=agency)
-        _alert_nearby(updated, spot, "CONFIRMED" if spot else ("SEVERE" if v.severity >= 4 else "HIGH"))
+        if not is_water:
+            _alert_nearby(updated, spot, "CONFIRMED" if spot else ("SEVERE" if v.severity >= 4 else "HIGH"))
         _email_officers(updated)
     else:
         metrics.add_metric(name="ReportsNeedsReview", unit=MetricUnit.Count, value=1)

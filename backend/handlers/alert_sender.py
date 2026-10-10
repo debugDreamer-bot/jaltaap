@@ -33,6 +33,9 @@ def render(msg: dict, lang: str) -> str:
     if msg["template_key"] == "alert_flood":
         return i18n.t("alert_flood", lang, spot=p["spot"], level=i18n.level_word(p["level"], lang),
                       agency=p["agency"], footer=footer)
+    if msg["template_key"] == "alert_rain_area":
+        return i18n.t("alert_rain_area", lang, level=i18n.level_word(p["level"], lang),
+                      rain=p.get("rain_mm") if p.get("rain_mm") is not None else "?", footer=footer)
     if msg["template_key"] == "brief_heat":
         return i18n.t("brief_heat", lang, band=i18n.band_word(p["band"], lang),
                       windows=_windows_text(p.get("heavy_work_windows", []), lang), footer=footer)

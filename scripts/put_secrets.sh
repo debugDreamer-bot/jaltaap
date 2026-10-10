@@ -18,6 +18,7 @@ put whatsapp/phone_number_id  "WhatsApp test number Phone Number ID"
 put telegram/bot_token        "Telegram bot token from @BotFather"
 put location/places_api_key   "Amazon Location Places API key value (stack output PlacesKeyName)"
 put eval_token                "Eval token (random string; lets run_evals.py see tool calls)"
+put officer_emails            'Optional officer alert emails as JSON, e.g. {"PWD": ["you@example.org"]} (SES-verified)'
 if ! aws ssm get-parameter --region "$REGION" --name /jaltaap/hash_salt >/dev/null 2>&1; then
   aws ssm put-parameter --region "$REGION" --name /jaltaap/hash_salt --type SecureString --value "$(openssl rand -hex 32)" >/dev/null
   echo "  generated /jaltaap/hash_salt (never change it: user ids depend on it)"

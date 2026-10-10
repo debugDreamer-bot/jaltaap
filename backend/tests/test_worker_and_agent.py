@@ -53,10 +53,10 @@ def test_stop_deletes_user_subscriptions_and_history(aws, sent, fake_agent):
     assert "STOP" not in sent[-1][2] and sent[-1][2] == i18n.t("stop_done", "en")
 
 
-def test_location_outside_delhi_is_refused(aws, sent, fake_agent):
+def test_location_outside_india_is_refused(aws, sent, fake_agent):
     from handlers.worker import process
-    process(_msg(type="location", lat=19.07, lon=72.88))
-    assert sent[-1][2] == i18n.t("outside_delhi", "hi")
+    process(_msg(type="location", lat=51.5, lon=-0.12))
+    assert sent[-1][2] == i18n.t("outside_india", "hi")
     assert fake_agent == []
 
 

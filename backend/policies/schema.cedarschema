@@ -1,0 +1,30 @@
+// Cedar schema for policies/reports.cedar. tests/test_authz.py validates the policies against it.
+namespace JalTaap {
+  entity Group;
+  entity Officer in [Group] {
+    agency: String,
+    city: String,
+  };
+  entity Report {
+    agency: String,
+    status: String,
+    city: String,
+    category: String,
+  };
+
+  type ReassignContext = {
+    to_agency?: String,
+    known_agencies?: Set<String>,
+  };
+
+  action "view", "confirm", "mark_false", "resolve" appliesTo {
+    principal: [Officer],
+    resource: [Report],
+    context: ReassignContext,
+  };
+  action "reassign" appliesTo {
+    principal: [Officer],
+    resource: [Report],
+    context: ReassignContext,
+  };
+}

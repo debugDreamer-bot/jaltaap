@@ -12,6 +12,7 @@ LANGS = ("hi", "hinglish", "en")
 
 _DEVANAGARI = re.compile(r"[ऀ-ॿ]")
 _HINGLISH_WORDS = {
+    "aaya", "aayi", "nal", "sookha", "sookhe", "gandaa", "ganda",
     "hai", "hain", "kya", "kab", "kaam", "karu", "karun", "karoon", "mein", "me", "mera", "mere", "meri",
     "bhai", "aaj", "kal", "garmi", "paani", "pani", "nahi", "nahin", "kaise", "kahan", "kidhar", "hoga",
     "jana", "jaana", "dhoop", "saathi", "chakkar", "pasina", "raha", "rahi", "thanda", "bhara", "baarish",
@@ -34,15 +35,15 @@ def detect_language(text: str | None) -> str:
 
 COPY: dict[str, dict[str, str]] = {
     "consent": {
-        "en": ("Welcome to JalTaap, a heat and rain safety helper for Delhi.\n"
+        "en": ("Welcome to JalTaap, a heat, rain and water safety helper for outdoor workers across India.\n"
                "We store only: your language, a rough location (about 1 km), alerts you ask for, and photos you send. "
                "We use them to send you safety advice. We never ask for your name or Aadhaar.\n"
                "Send STOP at any time to delete everything."),
-        "hi": ("जलताप में आपका स्वागत है। यह दिल्ली में गर्मी और बारिश से बचाव में मदद करता है।\n"
+        "hi": ("जलताप में आपका स्वागत है। यह पूरे भारत में बाहर काम करने वालों को गर्मी, बारिश और पानी की समस्या से बचाव में मदद करता है।\n"
                "हम सिर्फ़ ये रखते हैं: आपकी भाषा, लगभग 1 किमी तक की जगह, आपके चुने हुए अलर्ट और आपकी भेजी फ़ोटो। "
                "इनसे हम आपको सुरक्षा सलाह भेजते हैं। हम नाम या आधार कभी नहीं माँगते।\n"
                "सब कुछ मिटाने के लिए कभी भी STOP भेजें।"),
-        "hinglish": ("JalTaap mein swagat hai. Yeh Delhi mein garmi aur baarish se bachne mein madad karta hai.\n"
+        "hinglish": ("JalTaap mein swagat hai. Yeh poore Bharat mein bahar kaam karne walon ko garmi, baarish aur paani ki samasya se bachne mein madad karta hai.\n"
                      "Hum sirf yeh rakhte hain: aapki bhasha, lagbhag 1 km tak ki jagah, aapke alerts aur aapki photos. "
                      "Inse hum safety salah bhejte hain. Naam ya Aadhaar kabhi nahi maangte.\n"
                      "Sab mitaane ke liye kabhi bhi STOP bhejein."),
@@ -63,14 +64,17 @@ COPY: dict[str, dict[str, str]] = {
         "hinglish": "Aap kis ilaake mein hain? Jagah ka naam likhein ya location pin bhejein.",
     },
     "ask_photo": {
-        "en": "Send a photo of the waterlogging, leak or problem, then share your location pin.",
-        "hi": "जलभराव, लीकेज या समस्या की फ़ोटो भेजें, फिर अपनी लोकेशन पिन भेजें।",
-        "hinglish": "Paani bharne, leak ya problem ki photo bhejein, phir apni location pin bhejein.",
+        "en": ("Send a photo of the waterlogging, leak or problem, then share your location pin. "
+               "Tanker did not come or taps are dry? Just type it, for example: tanker did not come today."),
+        "hi": ("जलभराव, लीकेज या समस्या की फ़ोटो भेजें, फिर अपनी लोकेशन पिन भेजें। "
+               "टैंकर नहीं आया या नल सूखे हैं? बस लिख दें, जैसे: आज टैंकर नहीं आया।"),
+        "hinglish": ("Paani bharne, leak ya problem ki photo bhejein, phir apni location pin bhejein. "
+                     "Tanker nahi aaya ya nal sookhe hain? Bas likh dein, jaise: aaj tanker nahi aaya."),
     },
-    "outside_delhi": {
-        "en": "That location is outside Delhi. JalTaap covers Delhi for now.",
-        "hi": "यह जगह दिल्ली से बाहर है। अभी जलताप सिर्फ़ दिल्ली के लिए है।",
-        "hinglish": "Yeh jagah Delhi se bahar hai. Abhi JalTaap sirf Delhi ke liye hai.",
+    "outside_india": {
+        "en": "That location is outside India. JalTaap covers places in India.",
+        "hi": "यह जगह भारत से बाहर है। जलताप भारत की जगहों के लिए है।",
+        "hinglish": "Yeh jagah Bharat se bahar hai. JalTaap Bharat ki jagahon ke liye hai.",
     },
     "location_saved": {
         "en": "Location received.",
@@ -103,7 +107,7 @@ COPY: dict[str, dict[str, str]] = {
         "hinglish": "Maaf kijiye, yeh photo nahi li ja saki: {reason}",
     },
     "reason_old": {"en": "it is more than 6 hours old.", "hi": "यह 6 घंटे से पुरानी है।", "hinglish": "yeh 6 ghante se purani hai."},
-    "reason_outside": {"en": "the location is outside Delhi.", "hi": "जगह दिल्ली से बाहर है।", "hinglish": "jagah Delhi se bahar hai."},
+    "reason_outside": {"en": "the location is outside India.", "hi": "जगह भारत से बाहर है।", "hinglish": "jagah Bharat se bahar hai."},
     "reason_duplicate": {"en": "the same photo was already sent.", "hi": "यही फ़ोटो पहले भेजी जा चुकी है।", "hinglish": "yahi photo pehle bheji ja chuki hai."},
     "reason_rate": {"en": "too many reports in the last hour. Please try later.", "hi": "पिछले एक घंटे में बहुत ज़्यादा रिपोर्ट। थोड़ी देर बाद भेजें।", "hinglish": "pichhle ek ghante mein bahut zyada reports. Thodi der baad bhejein."},
     "data_unavailable": {
@@ -143,11 +147,74 @@ COPY: dict[str, dict[str, str]] = {
         "hi": "जलताप बारिश अलर्ट: अगले 3 घंटे में {spot} पर जलभराव का खतरा {level} है ({agency})। हो सके तो वहाँ से न जाएँ। {footer}",
         "hinglish": "JalTaap baarish alert: agle 3 ghante mein {spot} par paani bharne ka khatra {level} hai ({agency}). Ho sake to wahan se na jaayein. {footer}",
     },
+    "alert_rain_area": {
+        "en": "JalTaap rain alert for your area: {level} waterlogging risk in the next 3 hours ({rain} mm of rain expected). Avoid underpasses and low roads. {footer}",
+        "hi": "आपके इलाके के लिए जलताप बारिश अलर्ट: अगले 3 घंटे में जलभराव का खतरा {level} ({rain} मिमी बारिश का अनुमान)। अंडरपास और निचली सड़कों से बचें। {footer}",
+        "hinglish": "Aapke ilaake ke liye JalTaap baarish alert: agle 3 ghante mein paani bharne ka khatra {level} ({rain} mm baarish ka anumaan). Underpass aur neechi sadkon se bachein. {footer}",
+    },
     "brief_heat": {
         "en": "Good morning. Today in your area: {band}. Heavy work is safer {windows}. Drink water regularly. {footer}",
         "hi": "सुप्रभात। आज आपके इलाके में: {band}। भारी काम {windows} करना ज़्यादा सुरक्षित है। नियमित पानी पिएँ। {footer}",
         "hinglish": "Good morning. Aaj aapke ilaake mein: {band}. Bhaari kaam {windows} karna zyada safe hai. Paani piyein. {footer}",
     },
+    "water_report_filed": {
+        "en": "Noted for {agency}. If 3 people nearby report the same problem today, it is marked confirmed for the agency and shown on the public map.",
+        "hi": "{agency} के लिए दर्ज कर लिया। आज आस-पास के 3 लोग यही समस्या बताएँ तो इसे एजेंसी के लिए पक्का माना जाएगा और नक्शे पर दिखेगा।",
+        "hinglish": "{agency} ke liye darj kar liya. Aaj aas-paas ke 3 log yahi samasya batayein to ise agency ke liye pakka maana jayega aur map par dikhega.",
+    },
+    "water_report_duplicate": {
+        "en": "You already reported this today; it is with {agency}. {n} people nearby have reported it so far.",
+        "hi": "आप आज यह बता चुके हैं; यह {agency} के पास है। अब तक आस-पास के {n} लोगों ने इसे बताया है।",
+        "hinglish": "Aap aaj yeh bata chuke hain; yeh {agency} ke paas hai. Ab tak aas-paas ke {n} logon ne ise bataya hai.",
+    },
+    "water_report_corroborated": {
+        "en": "Thank you. {n} people nearby reported the same problem, so it is now marked confirmed for {agency} and shown on the public map.",
+        "hi": "धन्यवाद। आस-पास के {n} लोगों ने यही समस्या बताई, इसलिए अब यह {agency} के लिए पक्की है और नक्शे पर दिख रही है।",
+        "hinglish": "Dhanyavaad. Aas-paas ke {n} logon ne yahi samasya batayi, isliye ab yeh {agency} ke liye pakki hai aur map par dikh rahi hai.",
+    },
+    "voice_heard": {
+        "en": "Heard: \"{text}\"",
+        "hi": "सुना: \"{text}\"",
+        "hinglish": "Suna: \"{text}\"",
+    },
+    "voice_unclear": {
+        "en": "Sorry, I could not understand the voice note. Please try again, or type your question.",
+        "hi": "माफ़ कीजिए, वॉइस नोट समझ नहीं आया। फिर से भेजें या अपना सवाल लिखें।",
+        "hinglish": "Maaf kijiye, voice note samajh nahi aaya. Phir se bhejein ya apna sawaal likhein.",
+    },
+    # Spoken worker summary (/speak, Amazon Polly Kajal). Same sentences as the web check.speak.* copy.
+    "speak_verdict_GREEN": {"en": "Safe to work now.", "hi": "अभी काम कर सकते हैं।"},
+    "speak_verdict_YELLOW": {"en": "Work, but rest in shade often.", "hi": "काम करें, पर बार-बार छाँव में आराम करें।"},
+    "speak_verdict_ORANGE": {"en": "No heavy work now.", "hi": "अभी भारी काम न करें।"},
+    "speak_verdict_RED": {"en": "Danger. Stop heavy work and go to shade.", "hi": "खतरा। भारी काम बंद करें और छाँव में जाएँ।"},
+    "speak_heavy": {"en": "Heavy work is safe from {ranges} o'clock.", "hi": "भारी काम {ranges} बजे तक सुरक्षित है।"},
+    "speak_range": {"en": "{a} to {b}", "hi": "{a} से {b}"},
+    "speak_and": {"en": " and ", "hi": " और "},
+    "speak_no_heavy": {"en": "No heavy work today.", "hi": "आज भारी काम न करें।"},
+    "speak_noon": {"en": "Stop outdoor work from 12 to 3.", "hi": "12 से 3 बजे तक बाहर का काम रोकें।"},
+    "speak_water": {"en": "Drink {n} glasses of water every hour.", "hi": "हर घंटे {n} गिलास पानी पिएँ।"},
+    "speak_water_one": {"en": "Drink 1 glass of water every hour.", "hi": "हर घंटे 1 गिलास पानी पिएँ।"},
+    "speak_mask": {"en": "The air is polluted. Wear a mask.", "hi": "हवा प्रदूषित है। मास्क पहनें।"},
+    "speak_sun": {"en": "The sun is strong. Cover your head.", "hi": "धूप तेज़ है। सिर ढकें।"},
+    "speak_rain": {"en": "Heavy rain is coming. Stay away from underpasses.", "hi": "तेज़ बारिश आने वाली है। अंडरपास से दूर रहें।"},
+    "speak_emergency": {"en": "If someone feels dizzy or faints, call 112.", "hi": "किसी को चक्कर आए या बेहोश हो, तो 112 पर कॉल करें।"},
+    # Updates to the person who reported a problem (officer actions), fixed copy.
+    "report_update_confirmed": {
+        "en": "Update on your report {ref}: {agency} has confirmed it{where}. Thank you for reporting.",
+        "hi": "आपकी रिपोर्ट {ref} पर अपडेट: {agency} ने इसकी पुष्टि की{where}। रिपोर्ट करने के लिए धन्यवाद।",
+        "hinglish": "Aapki report {ref} par update: {agency} ne iski pushti ki{where}. Report karne ke liye dhanyavaad.",
+    },
+    "report_update_resolved": {
+        "en": "Good news: {agency} has marked your report {ref} as fixed{where}. Thank you for helping your city.",
+        "hi": "अच्छी खबर: {agency} ने आपकी रिपोर्ट {ref} को ठीक हुआ बताया{where}। शहर की मदद के लिए धन्यवाद।",
+        "hinglish": "Achhi khabar: {agency} ne aapki report {ref} ko theek hua bataya{where}. Shehar ki madad ke liye dhanyavaad.",
+    },
+    "report_update_reassigned": {
+        "en": "Update on your report {ref}: it has been passed to {agency}, the office responsible for that spot.",
+        "hi": "आपकी रिपोर्ट {ref} पर अपडेट: इसे {agency} को भेजा गया है, जो उस जगह के लिए ज़िम्मेदार है।",
+        "hinglish": "Aapki report {ref} par update: ise {agency} ko bheja gaya hai, jo us jagah ke liye zimmedaar hai.",
+    },
+    "report_where": {"en": " ({place})", "hi": " ({place})", "hinglish": " ({place})"},
     "subscribed": {
         "en": "Alerts are on for {hazards} near your location. Send STOP to turn everything off.",
         "hi": "आपकी जगह के पास {hazards} के अलर्ट चालू हैं। सब बंद करने के लिए STOP भेजें।",
@@ -184,6 +251,14 @@ ADVICE: dict[str, dict[str, str]] = {
     "stop_heavy_work": {"en": "Stop heavy work; go to shade or the nearest cooling zone.", "hi": "भारी काम बंद करें; छाँव या पास के कूलिंग ज़ोन में जाएँ।", "hinglish": "Bhaari kaam band karein; chhaon ya paas ke cooling zone mein jaayein."},
     "sip_constantly_ors": {"en": "Sip water constantly; ORS if sweating heavily.", "hi": "लगातार घूँट-घूँट पानी; ज़्यादा पसीने पर ORS।", "hinglish": "Lagaataar ghoont ghoont paani; zyada paseene par ORS."},
     "check_coworkers": {"en": "Check on co-workers.", "hi": "साथियों का हाल पूछते रहें।", "hinglish": "Saathiyon ka haal poochhte rahein."},
+    # Air quality (CPCB health statements) and UV (WHO) advice.
+    "air_moderate": {"en": "Air is moderately polluted: people with asthma or heart problems should take it easy.", "hi": "हवा मध्यम प्रदूषित है: दमा या दिल के मरीज़ आराम से काम करें।", "hinglish": "Hawa thodi pradushit hai: dama ya dil ke mareez aaram se kaam karein."},
+    "air_mask": {"en": "Air is polluted: wear an N95 mask outdoors.", "hi": "हवा प्रदूषित है: बाहर N95 मास्क पहनें।", "hinglish": "Hawa pradushit hai: bahar N95 mask pehnein."},
+    "air_breaks": {"en": "Take short breaks away from traffic and dust.", "hi": "ट्रैफ़िक और धूल से दूर थोड़ा आराम करें।", "hinglish": "Traffic aur dhool se door thoda aaram karein."},
+    "air_limit_heavy": {"en": "Cut down heavy work outdoors while the air is this bad.", "hi": "हवा इतनी खराब हो तो बाहर भारी काम कम करें।", "hinglish": "Hawa itni kharab ho to bahar bhaari kaam kam karein."},
+    "air_sensitive_indoors": {"en": "People with asthma, heart problems, the elderly and pregnant women should stay indoors if they can.", "hi": "दमा, दिल के मरीज़, बुज़ुर्ग और गर्भवती महिलाएँ हो सके तो घर के अंदर रहें।", "hinglish": "Dama, dil ke mareez, buzurg aur garbhvati mahilayein ho sake to ghar ke andar rahein."},
+    "uv_cover": {"en": "Strong sun: cover your head and wear a full-sleeve shirt.", "hi": "तेज़ धूप: सिर ढकें और पूरी बाँह की कमीज़ पहनें।", "hinglish": "Tez dhoop: sir dhakein aur poori baanh ki kameez pehnein."},
+    "uv_shade_noon": {"en": "Stay in shade around noon when the sun is strongest.", "hi": "दोपहर में जब धूप सबसे तेज़ हो, छाँव में रहें।", "hinglish": "Dopahar mein jab dhoop sabse tez ho, chhaon mein rahein."},
     "heatstroke_signs": {"en": "Heatstroke signs (confusion, fainting, hot dry skin) mean call 112.", "hi": "लू के लक्षण (उलझन, बेहोशी, गर्म सूखी त्वचा) हों तो 112 पर कॉल करें।", "hinglish": "Loo ke lakshan (uljhan, behoshi, garam sookhi twacha) hon to 112 par call karein."},
 }
 
@@ -196,6 +271,20 @@ def t(key: str, lang: str, **params) -> str:
 
 def band_word(band: str, lang: str) -> str:
     return BAND_WORDS[band].get(lang, BAND_WORDS[band]["en"])
+
+
+AQI_WORDS = {
+    "GOOD": {"en": "Good", "hi": "अच्छी", "hinglish": "achhi"},
+    "SATISFACTORY": {"en": "Satisfactory", "hi": "संतोषजनक", "hinglish": "theek"},
+    "MODERATE": {"en": "Moderate", "hi": "मध्यम", "hinglish": "madhyam"},
+    "POOR": {"en": "Poor", "hi": "खराब", "hinglish": "kharab"},
+    "VERY_POOR": {"en": "Very poor", "hi": "बहुत खराब", "hinglish": "bahut kharab"},
+    "SEVERE": {"en": "Severe", "hi": "गंभीर", "hinglish": "gambhir"},
+}
+
+
+def aqi_word(cat: str, lang: str) -> str:
+    return AQI_WORDS[cat].get(lang, AQI_WORDS[cat]["en"])
 
 
 def level_word(level: str, lang: str) -> str:

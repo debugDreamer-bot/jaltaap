@@ -1,10 +1,10 @@
-"""RiskRefreshFn (hourly): fetch 36 cells, compute heat and flood for now..+48 h, write RiskCache,
-enqueue alerts for subscribers whose area crosses ORANGE heat or HIGH flood risk."""
+"""RiskRefreshFn (hourly): fetch every city grid cell, compute heat and flood for now..+48 h, write
+RiskCache, enqueue alerts for subscribers whose area crosses ORANGE heat or HIGH flood/rain risk."""
 from __future__ import annotations
 
 import json
 
-from common.geo import geohash, geohash_decode
+from common.geo import geohash_decode
 
 from common import dynamo, refdata
 from common.aws import client
@@ -20,10 +20,24 @@ from risk.openmeteo import OpenMeteoError
 
 HOURS = 49              # now to +48 h
 FLOOD_ALERT_RADIUS_M = 3000
+CELL_FIELDS = ("band", "temp_c", "rh", "wet_bulb_c", "rain_next_3h_mm", "area_flood_level")
+
+
+def pack(row: dict) -> list:
+    """Compact cell value for the hourly snapshot item (keeps 126 cells in a few KB)."""
+    return [row.get(k) for k in CELL_FIELDS]
+
+
+def unpack(values: list) -> dict:
+    return {k: v for k, v in zip(CELL_FIELDS, values)}
 
 
 def compute(now=None) -> dict:
-    """Pure-ish computation (network for forecasts only); returns cache items and alert candidates."""
+    """Pure-ish computation (network for forecasts only); returns cache items and alert candidates.
+
+    Heat for every city is stored as one snapshot item per hour (pk "heatgrid", sk = ISO hour,
+    plus sk "latest"): about 50 writes an hour instead of one per cell per hour.
+    """
     now = now or now_ist()
     series_by_cell = service.grid_series()
     fetched_at = next(iter(series_by_cell.values()))["fetched_at"]
@@ -31,6 +45,7 @@ def compute(now=None) -> dict:
     items: list[dict] = []
     day_bands: dict[str, dict] = {}
     hours_available: list[str] = []
+    snapshots: dict[str, dict] = {}
 
     for cell in gridmod.cells():
         s = series_by_cell[cell["id"]]
@@ -38,20 +53,26 @@ def compute(now=None) -> dict:
         if not hours_available:
             hours_available = [r["time"] for r in rows]
         for r in rows:
-            items.append({"pk": f"heat#{cell['id']}", "sk": r["time"], **{k: r[k] for k in ("band", "temp_c", "rh", "wet_bulb_c")},
-                          "computed_at": fetched_at})
+            snapshots.setdefault(r["time"], {})[cell["id"]] = pack(r)
         plan = service.heat_plan_from_series(s, lat=cell["lat"], lon=cell["lon"], label=cell["id"], day=today)
         day_bands[cell["id"]] = {"day_band": plan["day_band"], "avoid_windows": plan["avoid_windows"],
-                                 "heavy_work_windows": plan["heavy_work_windows"]}
-        if rows:
-            items.append({"pk": f"heat#{cell['id']}", "sk": "latest", **{k: rows[0][k] for k in ("band", "temp_c", "rh", "wet_bulb_c")},
-                          "time": rows[0]["time"], "day_band": plan["day_band"], "computed_at": fetched_at})
+                                 "heavy_work_windows": plan["heavy_work_windows"],
+                                 "area_flood_level": rows[0].get("area_flood_level") if rows else None,
+                                 "rain_next_3h_mm": rows[0].get("rain_next_3h_mm") if rows else None}
+    for hour, cells in snapshots.items():
+        items.append({"pk": "heatgrid", "sk": hour, "cells": cells, "computed_at": fetched_at})
+    if hours_available:
+        items.append({"pk": "heatgrid", "sk": "latest", "time": hours_available[0],
+                      "cells": snapshots[hours_available[0]], "computed_at": fetched_at})
 
     since = dynamo.since(2)   # crowd confirmation window
     verified = dynamo.reports_by_status("verified", since) + dynamo.reports_by_status("confirmed", since)
     flood_latest: dict[str, dict] = {}
     for spot in refdata.hotspots():
-        s = series_by_cell[gridmod.snap(spot["lat"], spot["lon"])]
+        cell = gridmod.nearest_cell(spot["lat"], spot["lon"])
+        if cell is None:
+            continue   # a hotspot far from every covered city: no forecast cell to score it with
+        s = series_by_cell[cell]
         rows = service.flood_hours(s, spot, now, HOURS, reports=verified)
         for r in rows:
             items.append({"pk": f"flood#{spot['id']}", "sk": r["time"], "computed_at": fetched_at,
@@ -66,16 +87,49 @@ def compute(now=None) -> dict:
     return {"items": items, "day_bands": day_bands, "flood_latest": flood_latest, "fetched_at": fetched_at}
 
 
-def alert_candidates(result: dict, subscriptions: list[dict]) -> list[dict]:
+def area_conditions(result: dict, areas: list[str], now=None) -> dict[str, dict]:
+    """Day band and area rain level per subscriber area (geohash5).
+
+    Areas inside a city grid reuse that cell; areas elsewhere in India get one batched point fetch.
+    """
+    out: dict[str, dict] = {}
+    loose: list[tuple[str, float, float]] = []
+    for area in areas:
+        lat, lon = geohash_decode(area)
+        cell = gridmod.covering_cell(lat, lon)
+        if cell and cell in result["day_bands"]:
+            out[area] = result["day_bands"][cell]
+        elif gridmod.in_india(lat, lon):
+            loose.append((area, lat, lon))
+    if loose:
+        now = now or now_ist()
+        try:
+            series = service.point_series([(la, lo) for _, la, lo in loose])
+        except OpenMeteoError:
+            logger.exception("point forecasts for outlying subscribers unavailable")
+            return out
+        for (area, la, lo), s in zip(loose, series):
+            plan = service.heat_plan_from_series(s, lat=la, lon=lo, label=area, day=now.date().isoformat())
+            first = service.heat_hours(s, now, 1)
+            out[area] = {"day_band": plan["day_band"], "avoid_windows": plan["avoid_windows"],
+                         "heavy_work_windows": plan["heavy_work_windows"],
+                         "area_flood_level": first[0].get("area_flood_level") if first else None,
+                         "rain_next_3h_mm": first[0].get("rain_next_3h_mm") if first else None}
+    return out
+
+
+def alert_candidates(result: dict, subscriptions: list[dict], conditions: dict[str, dict] | None = None) -> list[dict]:
     """Messages for AlertQueue. The 6-hour dedupe happens in AlertSenderFn."""
+    if conditions is None:
+        conditions = area_conditions(result, sorted({s["area"] for s in subscriptions}))
     out = []
     for sub in subscriptions:
         lat, lon = geohash_decode(sub["area"])
+        info = conditions.get(sub["area"])
+        user = sub["user"].split("#", 1)[1]
         if sub["hazard"] == "heat":
-            info = result["day_bands"].get(gridmod.snap(lat, lon))
             if info and band_index(info["day_band"]) >= band_index("ORANGE"):
-                out.append({"user_hash": sub["user"].split("#", 1)[1], "hazard": "heat", "area": sub["area"],
-                            "template_key": "alert_heat",
+                out.append({"user_hash": user, "hazard": "heat", "area": sub["area"], "template_key": "alert_heat",
                             "params": {"band": info["day_band"], "avoid_windows": info["avoid_windows"],
                                        "updated_at": result["fetched_at"]}})
         elif sub["hazard"] == "flood":
@@ -83,9 +137,12 @@ def alert_candidates(result: dict, subscriptions: list[dict]) -> list[dict]:
                     if haversine_m(lat, lon, f["lat"], f["lon"]) <= FLOOD_ALERT_RADIUS_M and level_index(f["level"]) >= level_index("HIGH")]
             if near:
                 worst = max(near, key=lambda f: (level_index(f["level"]), f["risk"]))
-                out.append({"user_hash": sub["user"].split("#", 1)[1], "hazard": "flood", "area": sub["area"],
-                            "template_key": "alert_flood",
+                out.append({"user_hash": user, "hazard": "flood", "area": sub["area"], "template_key": "alert_flood",
                             "params": {"spot": worst["name"], "level": worst["level"], "agency": worst["agency"],
+                                       "updated_at": result["fetched_at"]}})
+            elif info and info.get("area_flood_level") and level_index(info["area_flood_level"]) >= level_index("HIGH"):
+                out.append({"user_hash": user, "hazard": "flood", "area": sub["area"], "template_key": "alert_rain_area",
+                            "params": {"level": info["area_flood_level"], "rain_mm": info.get("rain_next_3h_mm"),
                                        "updated_at": result["fetched_at"]}})
     return out
 

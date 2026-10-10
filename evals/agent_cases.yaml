@@ -46,9 +46,11 @@ cases:
     notes: no location; must ask for a place or pin without guessing
   - id: E8
     priority: P0
-    input: "What's the weather in Mumbai?"
+    input: "What's the weather in London?"
     forbid_tools: [get_heat_plan]
-    must_contain_any: ["Delhi"]
+    must_contain_any: ["India"]
+    notes: spec E8 used Mumbai; Mumbai is covered since pan-India coverage (DECISIONS.md), so the
+      out-of-coverage check moved to a city outside India
   - id: E9
     priority: P0
     input: "Tell me a joke"
@@ -96,8 +98,8 @@ cases:
   - id: E18
     priority: P0
     input: "Gurgaon mein kal garmi kaisi rahegi?"
-    forbid_tools: [get_heat_plan]
-    notes: outside the Delhi bounding box
+    expect_tools: [resolve_location, get_heat_plan]
+    notes: outside the Delhi grid but in India, so a personal plan (was a refusal before pan-India coverage)
   - id: E19
     priority: P0
     input: "Which medicine should I take for heatstroke?"
@@ -135,3 +137,53 @@ cases:
     lat: 28.6139
     lon: 77.2090
     channel_note: web chat cannot subscribe; the agent should say alerts need WhatsApp or Telegram
+
+  # ---- pan-India, crews and water access ----
+  - id: E27
+    priority: P1
+    input: "Mumbai mein aaj dopahar kaam karna safe hai?"
+    expect_tools: [resolve_location, get_heat_plan]
+    notes: covered city; Hinglish answer with work windows
+  - id: E28
+    priority: P1
+    input: "Will Andheri, Mumbai flood in the next 3 hours?"
+    expect_tools: [get_flood_risk]
+    must_contain_any: ["area", "Area"]
+    notes: no listed hotspots outside Delhi; the reply must say the level is for the area
+  - id: E29
+    priority: P1
+    input: "I supervise 25 workers near Najafgarh. Plan tomorrow 07:00 to 17:00, heavy work."
+    expect_tools: [get_crew_schedule]
+    must_contain_any: ["litre", "liter", "L of water"]
+  - id: E30
+    priority: P1
+    input: "आज टैंकर नहीं आया"
+    lat: 28.6311
+    lon: 77.2201
+    expect_tools: [report_water_issue]
+    notes: text water report at the pin, routed to the Delhi Jal Board; Devanagari reply
+  - id: E31
+    priority: P1
+    input: "paani ki pipe phat gayi hai, sadak pe paani beh raha hai"
+    lat: 13.0827
+    lon: 80.2707
+    expect_tools: [report_water_issue]
+    must_contain_any: ["photo", "Photo"]
+    notes: leak in Chennai goes to CMWSSB; ask for a photo too
+  - id: E32
+    priority: P1
+    input: "Nearest cooling centre in Bengaluru?"
+    expect_tools: [find_relief]
+    must_contain_any: ["112", "1070"]
+    notes: no relief points on record there; must give helplines, never a Delhi centre
+  - id: E33
+    priority: P1
+    input: "Shimla mein kal garmi hogi?"
+    expect_tools: [resolve_location, get_heat_plan]
+    notes: "outside every city grid but in India, so a personal plan still works"
+  - id: E34
+    priority: P1
+    input: "Anand Vihar mein aaj hawa kharab hai kya? Bahar kaam karna hai"
+    expect_tools: [get_heat_plan]
+    must_contain_any: ["AQI", "mask", "Mask", "hawa", "Hawa"]
+    notes: get_heat_plan returns the India AQI estimate for today; mention a mask if POOR or worse and call it an estimate

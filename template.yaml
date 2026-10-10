@@ -1,7 +1,8 @@
 AWSTemplateFormatVersion: "2010-09-09"
 Transform: AWS::Serverless-2016-10-31
 Description: >
-  JalTaap - heat and waterlogging safety copilot for Delhi's outdoor workers.
+  JalTaap - heat, waterlogging and water-access safety copilot for India's outdoor workers
+  (Delhi in full, ten more cities on the live map, personal heat plans anywhere in India).
   Whole backend as code: sam build && sam deploy (region ap-south-1).
 
 Parameters:
@@ -35,6 +36,15 @@ Parameters:
     Type: String
     Description: SES-verified sender for officer alert emails. Leave empty to disable.
     Default: ""
+  VoiceEnabled:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Description: Hindi voice notes in (Amazon Transcribe) and out (Amazon Polly) on WhatsApp and Telegram.
+    Default: "true"
+  PollyVoice:
+    Type: String
+    Description: Amazon Polly neural voice for Hindi (hi-IN) and Indian English (en-IN). Kajal is a female voice.
+    Default: Kajal
 
 Conditions:
   HasAlarmEmail: !Not [!Equals [!Ref AlarmEmail, ""]]
@@ -61,6 +71,8 @@ Globals:
         WEB_ORIGIN: !Ref WebOrigin
         SSM_PREFIX: /jaltaap
         OFFICER_EMAIL_FROM: !Ref OfficerEmailFrom
+        VOICE_ENABLED: !Ref VoiceEnabled
+        POLLY_VOICE: !Ref PollyVoice
         USERS_TABLE: !Ref UsersTable
         SUBSCRIPTIONS_TABLE: !Ref SubscriptionsTable
         RISK_TABLE: !Ref RiskCacheTable
@@ -191,6 +203,7 @@ Resources:
         Rules:
           - {Id: raw-photos-30-days, Status: Enabled, Prefix: reports/raw/, ExpirationInDays: 30}
           - {Id: held-photos-1-day, Status: Enabled, Prefix: reports/hold/, ExpirationInDays: 1}
+          - {Id: voice-notes-1-day, Status: Enabled, Prefix: voice/, ExpirationInDays: 1}   # deleted after transcription anyway
       CorsConfiguration:
         CorsRules:
           - AllowedOrigins: [!Ref WebOrigin]
@@ -226,6 +239,7 @@ Resources:
       AutoVerifiedAttributes: [email]
       Schema:
         - {Name: agency, AttributeDataType: String, Mutable: true}
+        - {Name: city, AttributeDataType: String, Mutable: true}      # delhi, mumbai, ... (control rooms, Cedar)
       Policies:
         PasswordPolicy: {MinimumLength: 10, RequireLowercase: true, RequireNumbers: true, RequireUppercase: true, RequireSymbols: false}
   UserPoolClient:
@@ -235,11 +249,14 @@ Resources:
       ClientName: jaltaap-web
       GenerateSecret: false
       ExplicitAuthFlows: [ALLOW_USER_SRP_AUTH, ALLOW_REFRESH_TOKEN_AUTH]
-      ReadAttributes: [email, custom:agency]
+      ReadAttributes: [email, custom:agency, custom:city]
       PreventUserExistenceErrors: ENABLED
   OfficersGroup:
     Type: AWS::Cognito::UserPoolGroup
-    Properties: {GroupName: officers, UserPoolId: !Ref UserPool, Description: "PWD, MCD and NDMC officers"}
+    Properties: {GroupName: officers, UserPoolId: !Ref UserPool, Description: "Agency officers (PWD, MCD, NDMC, DJB, city corporations and water boards)"}
+  ControlRoomGroup:
+    Type: AWS::Cognito::UserPoolGroup
+    Properties: {GroupName: control_room, UserPoolId: !Ref UserPool, Description: "City control rooms: read every agency's queue in their city (Cedar policy)"}
 
   # ---------------------------------------------------------------- maps and geocoding
   MapKey:
@@ -316,9 +333,17 @@ Resources:
         - S3CrudPolicy: {BucketName: !Sub "jaltaap-${AWS::AccountId}-${AWS::Region}"}
         - SSMParameterReadPolicy: {ParameterName: jaltaap/*}
         - Statement:
+            - Effect: Allow                   # Hindi voice notes in and out
+              Action: [transcribe:StartTranscriptionJob, transcribe:GetTranscriptionJob, transcribe:DeleteTranscriptionJob]
+              Resource: !Sub "arn:aws:transcribe:${AWS::Region}:${AWS::AccountId}:transcription-job/jaltaap-*"
+            - Effect: Allow
+              Action: [polly:SynthesizeSpeech]
+              Resource: "*"                   # Polly has no resource-level permissions for voices
             - Effect: Allow
               Action: [bedrock:InvokeModel, bedrock:InvokeModelWithResponseStream]
-              Resource: "*"            # narrow to the chosen model and inference-profile ARNs
+              Resource:                # chosen models, called directly or via cross-region inference profiles
+                - arn:aws:bedrock:*::foundation-model/*
+                - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*"
   AgentWorkerLogs:
     Type: AWS::Logs::LogGroup
     Properties: {LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-worker", RetentionInDays: 7}
@@ -337,6 +362,7 @@ Resources:
         - DynamoDBCrudPolicy: {TableName: !Ref UsersTable}
         - DynamoDBCrudPolicy: {TableName: !Ref ConversationsTable}
         - DynamoDBCrudPolicy: {TableName: !Ref IdempotencyTable}
+        - DynamoDBCrudPolicy: {TableName: !Ref ReportsTable}      # report_water_issue from the web chat
         - DynamoDBReadPolicy: {TableName: !Ref RiskCacheTable}
         - DynamoDBReadPolicy: {TableName: !Ref SubscriptionsTable}
         - S3ReadPolicy: {BucketName: !Sub "jaltaap-${AWS::AccountId}-${AWS::Region}"}
@@ -344,7 +370,9 @@ Resources:
         - Statement:
             - Effect: Allow
               Action: [bedrock:InvokeModel, bedrock:InvokeModelWithResponseStream]
-              Resource: "*"
+              Resource:                # chosen models, called directly or via cross-region inference profiles
+                - arn:aws:bedrock:*::foundation-model/*
+                - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*"
   ChatApiLogs:
     Type: AWS::Logs::LogGroup
     Properties: {LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-chat-api", RetentionInDays: 7}
@@ -355,7 +383,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-risk-refresh
       Handler: handlers.risk_refresh.handler
-      Timeout: 60
+      Timeout: 180                     # 126 grid cells across 11 cities, batched Open-Meteo requests
       MemorySize: 512
       Events:
         Hourly: {Type: ScheduleV2, Properties: {ScheduleExpression: rate(1 hour)}}
@@ -375,7 +403,7 @@ Resources:
     Properties:
       FunctionName: !Sub ${AWS::StackName}-daily-brief
       Handler: handlers.daily_brief.handler
-      Timeout: 60
+      Timeout: 120
       MemorySize: 512
       Events:
         Brief:
@@ -402,7 +430,7 @@ Resources:
         - DynamoDBCrudPolicy: {TableName: !Ref SubscriptionsTable}
         - SSMParameterReadPolicy: {ParameterName: jaltaap/*}
         - Statement:
-            - {Effect: Allow, Action: [ses:SendEmail], Resource: "*"}
+            - {Effect: Allow, Action: [ses:SendEmail], Resource: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"}
   AlertSenderLogs:
     Type: AWS::Logs::LogGroup
     Properties: {LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-alert-sender", RetentionInDays: 7}
@@ -433,8 +461,10 @@ Resources:
         - Statement:
             - Effect: Allow
               Action: [bedrock:InvokeModel]
-              Resource: "*"
-            - {Effect: Allow, Action: [ses:SendEmail], Resource: "*"}
+              Resource:                # chosen models, called directly or via cross-region inference profiles
+                - arn:aws:bedrock:*::foundation-model/*
+                - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*"
+            - {Effect: Allow, Action: [ses:SendEmail], Resource: !Sub "arn:aws:ses:${AWS::Region}:${AWS::AccountId}:identity/*"}
   VerifierLogs:
     Type: AWS::Logs::LogGroup
     Properties: {LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-verifier", RetentionInDays: 7}
@@ -451,6 +481,11 @@ Resources:
         Health: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /health, Method: GET}}
         Heat: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /risk/heat, Method: GET}}
         Flood: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /risk/flood, Method: GET}}
+        Cities: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /cities, Method: GET}}
+        Water: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /water-issues, Method: GET}}
+        Crew: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /crew, Method: GET}}
+        Now: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /now, Method: GET}}
+        Speak: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /speak, Method: GET}}
         Relief: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /relief, Method: GET}}
         Reports: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /reports, Method: GET}}
         ReplayIndex: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /replay, Method: GET}}
@@ -463,6 +498,8 @@ Resources:
         - DynamoDBCrudPolicy: {TableName: !Ref IdempotencyTable}
         - S3CrudPolicy: {BucketName: !Sub "jaltaap-${AWS::AccountId}-${AWS::Region}"}
         - SSMParameterReadPolicy: {ParameterName: jaltaap/*}
+        - Statement:
+            - {Effect: Allow, Action: [polly:SynthesizeSpeech], Resource: "*"}   # /speak, female voice Kajal
   PublicApiLogs:
     Type: AWS::Logs::LogGroup
     Properties: {LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-public-api", RetentionInDays: 7}
@@ -479,6 +516,7 @@ Resources:
         Queue: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /officer/reports, Method: GET, Auth: {Authorizer: CognitoAuth}}}
         Patch: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: "/reports/{id}", Method: PATCH, Auth: {Authorizer: CognitoAuth}}}
         Brief: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: "/briefs/{agency}", Method: GET, Auth: {Authorizer: CognitoAuth}}}
+        Agencies: {Type: HttpApi, Properties: {ApiId: !Ref HttpApi, Path: /officer/agencies, Method: GET, Auth: {Authorizer: CognitoAuth}}}
       Policies:
         - DynamoDBCrudPolicy: {TableName: !Ref ReportsTable}
         - DynamoDBCrudPolicy: {TableName: !Ref UsersTable}
@@ -488,7 +526,9 @@ Resources:
         - Statement:
             - Effect: Allow
               Action: [bedrock:InvokeModel]
-              Resource: "*"
+              Resource:                # chosen models, called directly or via cross-region inference profiles
+                - arn:aws:bedrock:*::foundation-model/*
+                - !Sub "arn:aws:bedrock:*:${AWS::AccountId}:inference-profile/*"
   OfficerApiLogs:
     Type: AWS::Logs::LogGroup
     Properties: {LogGroupName: !Sub "/aws/lambda/${AWS::StackName}-officer-api", RetentionInDays: 7}

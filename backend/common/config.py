@@ -35,6 +35,8 @@ class Settings:
     whatsapp_graph_version: str = field(default_factory=lambda: _env("WHATSAPP_GRAPH_VERSION", "v23.0"))
     location_index_region: str = field(default_factory=lambda: _env("LOCATION_REGION", "ap-south-1"))
     officer_email_from: str = field(default_factory=lambda: _env("OFFICER_EMAIL_FROM", ""))
+    voice_enabled: bool = field(default_factory=lambda: _env("VOICE_ENABLED", "false").lower() == "true")
+    polly_voice: str = field(default_factory=lambda: _env("POLLY_VOICE", "Kajal"))
 
 
 def settings() -> Settings:

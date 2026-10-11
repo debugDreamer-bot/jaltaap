@@ -26,9 +26,9 @@ def location_from_user(user: dict | None) -> dict | None:
 
 
 def answer(*, user_hash: str, channel: str, lang: str, text: str, last_location: dict | None,
-           profile: list[str] | None = None) -> dict:
+           profile: list[str] | None = None, shift: dict | None = None) -> dict:
     ctx = UserContext(user_hash=user_hash, channel=channel, lang=lang, last_location=last_location,
-                      profile=profile or [])
+                      profile=profile or [], shift=shift)
     history = dynamo.last_turns(user_hash, turns=6)
     out = runner.run(ctx, text, history)
     dynamo.append_turn(user_hash, "user", text)

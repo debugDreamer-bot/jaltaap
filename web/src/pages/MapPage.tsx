@@ -10,12 +10,16 @@ import { LayerToggles } from '../components/LayerToggles'
 import { Legend } from '../components/Legend'
 import { USE_MOCK, config } from '../config'
 import { currentLang } from '../i18n'
+import { openChat } from '../lib/chat'
+import { useLiveSafety } from '../lib/liveSafety'
+import { navigate } from '../lib/nav'
+import { updateSettings, useSettings } from '../lib/settings'
 import { readStore, writeStore } from '../lib/storage'
 import { formatHour, hoursBetween, istIsoHoursAgo } from '../lib/time'
-import { RiskMap, type LayerVisibility, type MapCell, type MapData, type MapFocus, type MapHotspot } from '../map/RiskMap'
+import { describeWarning } from '../lib/warnings'
+import { RiskMap, type LayerVisibility, type MapCell, type MapData, type MapFocus, type MapHotspot, type MapMe } from '../map/RiskMap'
 import { isFloodLevel, isHeatBand } from '../theme'
 
-const ChatDrawer = lazy(() => import('../components/ChatDrawer'))
 const CityDashboard = lazy(() => import('../components/CityDashboard').then((m) => ({ default: m.CityDashboard })))
 
 type Load<T> = { state: 'idle' | 'loading' } | { state: 'ok'; value: T } | { state: 'error' }
@@ -102,7 +106,6 @@ export default function MapPage() {
   const [focus, setFocus] = useState<MapFocus | null>(null)
   const [water, setWater] = useState<Load<WaterIssue[]>>({ state: 'idle' })
   const [panelOpen, setPanelOpen] = useState(false)
-  const [chatOpen, setChatOpen] = useState(false)
   const [provider, setProvider] = useState<{ name: 'amazon' | 'openfreemap'; items: AttribItem[] }>(() => {
     const p = config.mapKey ? 'amazon' : 'openfreemap'
     return { name: p, items: PROVIDER_FALLBACK[p] }
@@ -264,6 +267,42 @@ export default function MapPage() {
 
   const inReplay = Boolean(replayId)
 
+  // ---- "you are here": the live safety location, with what it means for this user ----
+  const settings = useSettings()
+  const live = useLiveSafety()
+  const [flyToMe, setFlyToMe] = useState(0)
+  const [seeking, setSeeking] = useState(false)   // waiting for a first fix, then fly to it
+  const me = useMemo<MapMe | null>(() => {
+    if (!live.coords || inReplay) return null
+    const hour = live.now?.now
+    const band = hour && isHeatBand(hour.band) ? hour.band : null
+    const top = live.warnings.find((w) => w.severity >= 2)
+    const text = top ? describeWarning(top, t) : null
+    return {
+      lat: live.coords.lat,
+      lon: live.coords.lon,
+      band,
+      temp_c: hour?.temp_c ?? null,
+      warning: text ? `${text.title}: ${text.headline} ${text.action}` : null,
+      accuracy: live.accuracy,
+      checkedAt: live.checkedAt,
+      personalised: settings.flags.length > 0,
+      label: hour ? `${t('me.map.you')} · ${Math.round(hour.temp_c)}°C` : t('me.map.you'),
+    }
+  }, [live.coords, live.now, live.warnings, live.accuracy, live.checkedAt, settings.flags.length, inReplay, t])
+  useEffect(() => {
+    if (!seeking || !live.coords) return
+    setSeeking(false)
+    setFlyToMe((n) => n + 1)
+  }, [seeking, live.coords])
+  const locate = () => {
+    if (live.coords) return setFlyToMe((n) => n + 1)
+    setSeeking(true)
+    if (!settings.live) updateSettings({ live: true })   // tapping "show my location" is the consent
+  }
+  const openSafety = useCallback(() => navigate('/me'), [])
+  const locateProblem = ['denied', 'unavailable', 'unsupported', 'outside'].includes(live.status)
+
   // City picker: fly to the city (or all of India) and remember the choice on this device.
   const pickCity = useCallback(
     (id: string) => {
@@ -274,6 +313,12 @@ export default function MapPage() {
     },
     [cities],
   )
+  // After "show my location", the side panel follows: it shows the city the user is standing in
+  // (the camera already flew to them; the remembered city choice is left as it was).
+  const myCity = live.now?.location.city_id ?? null
+  useEffect(() => {
+    if (flyToMe && myCity && cities.some((c) => c.id === myCity)) setCityId(myCity)
+  }, [flyToMe, myCity, cities])
   // Once cities load, go to the remembered city (Delhi by default needs no move).
   const firstFocus = useRef(false)
   useEffect(() => {
@@ -490,7 +535,7 @@ export default function MapPage() {
   const chatButton = (cls: string) => (
     <button
       type="button"
-      onClick={() => setChatOpen(true)}
+      onClick={() => openChat()}
       className={`inline-flex min-h-11 items-center justify-center gap-2 rounded-lg bg-[#c2410c] px-4 py-2 font-bold text-white shadow hover:bg-[#9a3412] ${cls}`}
     >
       <Icon name="chat" size={20} />
@@ -509,7 +554,26 @@ export default function MapPage() {
     <div className="flex h-full flex-col lg:flex-row">
       {/* Map */}
       <div className="relative min-h-0 flex-1 lg:order-2">
-        <RiskMap data={mapData} visible={visible} lang={lang} clock={clock} onProvider={onProvider} focus={focus} />
+        <RiskMap data={mapData} visible={visible} lang={lang} clock={clock} onProvider={onProvider} focus={focus} me={me} flyToMe={flyToMe} onOpenSafety={openSafety} />
+        {!inReplay && (
+          <div className="absolute top-[78px] right-[10px] z-10 flex items-center gap-2">
+            {(locateProblem || (seeking && live.status === 'locating')) && (
+              <p role="status" className="max-w-56 rounded-lg bg-white px-2.5 py-1.5 text-[14px] font-semibold shadow">
+                {live.status === 'locating' ? t('me.live.locating') : live.status === 'outside' ? t('me.live.outside') : t(`chat.location${live.status === 'denied' ? 'Denied' : live.status === 'unsupported' ? 'Unsupported' : 'Unavailable'}`)}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={locate}
+              aria-label={t('me.map.locate')}
+              title={t('me.map.locate')}
+              aria-pressed={Boolean(me)}
+              className={`inline-flex h-11 w-11 items-center justify-center rounded-lg shadow-[0_0_0_2px_rgb(0_0_0/0.1)] ${me ? 'bg-[#1c7ed6] text-white' : 'bg-white text-[#1c7ed6]'}`}
+            >
+              <Icon name="location" size={22} />
+            </button>
+          </div>
+        )}
         {inReplay && (
           <div
             role="status"
@@ -572,11 +636,6 @@ export default function MapPage() {
         </div>
       </aside>
 
-      {chatOpen && (
-        <Suspense fallback={null}>
-          <ChatDrawer onClose={() => setChatOpen(false)} />
-        </Suspense>
-      )}
     </div>
   )
 }

@@ -72,7 +72,8 @@ def finalize(reply: str, ctx: UserContext, user_text: str) -> str:
 def run(ctx: UserContext, user_text: str, history: list[dict]) -> dict:
     """Run the agent; retry once on the fallback model; never raise to the caller."""
     s = settings()
-    prompt = context_preamble(ctx.lang, ctx.last_location, now_ist().strftime("%Y-%m-%d %H:%M")) + "\n\n" + user_text
+    prompt = context_preamble(ctx.lang, ctx.last_location, now_ist().strftime("%Y-%m-%d %H:%M"),
+                              ctx.profile, ctx.shift) + "\n\n" + user_text
     started = time.time()
     model_used, reply, error = None, None, None
     for model_id in [m for m in (s.model_id, s.fallback_model_id) if m]:

@@ -198,6 +198,39 @@ modern, animated site. Two audiences, two designs:
   Marking a report false sends nothing (trust weight handles that). Failures (24-hour window, STOP)
   never block the officer's action.
 
+## Personal profile, live safety and chat everywhere (2026-10-10)
+
+- **Profile on the device, not in an account.** The five flags the heat engine already knew
+  (`heavy_work`, `age_60_plus`, `pregnant`, `chronic_illness`, `not_acclimatised`) are set on the new
+  "My safety" page (`/me`), saved in localStorage, and sent with `/now` and `/chat`. No user record,
+  no name. The engine rule is unchanged: at most +1 band, and GREEN stays GREEN.
+- **One set of warning rules.** `risk/warnings.py` turns a `/now` summary into next-3-hour warnings
+  (heat, area rain, air, UV) with severity 1–3. The web banner, browser notifications and Telegram
+  live location all use it, so no surface can disagree with another. Moderate air is an advisory
+  only for the groups the CPCB advice names.
+- **Web live safety** watches the location only while the app is open and the user has switched it
+  on; it re-checks after 500 m or 10 minutes. The location leaves the device only rounded to ~100 m
+  inside the `/now` request. Notifications go through a minimal service worker (Android requires
+  one) that does nothing else. A closed tab cannot warn anyone: Telegram live location is the answer
+  for a phone in a pocket.
+- **Telegram live location never calls the LLM.** Moves arrive as `edited_message` updates every few
+  seconds; each one updates `last_geohash6`, re-checks risk at most every 15 minutes per ~1 km cell
+  (Open-Meteo is already cached per ~1 km), and sends a fixed template only when the worst warning
+  changes, again after 2 hours if it persists, and once when it clears. The first live pin gets the
+  normal agent answer and records a baseline so it is not repeated. Edited text messages are ignored.
+- **Chat on every page.** One drawer for the app (`lib/chat.ts`), opened from a floating button
+  (icon-only on phones so it never hides a primary button), the landing hero, the map, and the
+  warning banner's "Ask what to do", which pre-fills the warning for the user to send.
+
+- **"You are here" on the live map** uses the same live-safety location (no second GPS watch). The
+  blue dot's halo takes the heat colour where the user stands when it is ORANGE or RED, its label
+  shows the temperature, and its popup shows the personal warning and GPS accuracy. The locate
+  button is the consent to turn live safety on; the side panel then shows the user's city.
+- **"Your day, personalised"** puts the user's band next to the band for most people
+  (`/now` now returns `base_day_band`) and names the reasons (`escalations`), so the profile's
+  effect is visible, not hidden. An optional shift (HH:MM–HH:MM, on the device) clips the safe and
+  avoid windows to the user's hours and goes to the chat as context.
+
 ## Results to keep honest (from backtests, 2026-10-09)
 
 - Backtest A headline: "11 days in 2026 were dangerous by humidity but never met a 40 C heatwave

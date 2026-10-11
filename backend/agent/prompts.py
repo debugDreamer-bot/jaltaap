@@ -50,11 +50,27 @@ CREWS AND WATER
 """
 
 
-def context_preamble(lang: str, last_location: dict | None, now_iso: str) -> str:
+PROFILE_WORDS = {
+    "heavy_work": "does heavy physical work",
+    "age_60_plus": "is 60 or older",
+    "pregnant": "is pregnant",
+    "chronic_illness": "has a heart, lung or kidney condition or diabetes",
+    "not_acclimatised": "is new to this heat (under two weeks)",
+}
+
+
+def context_preamble(lang: str, last_location: dict | None, now_iso: str, profile: list[str] | None = None,
+                     shift: dict | None = None) -> str:
     """Per-request context prepended to the user's message (no personal identifiers)."""
     lines = [f"[Context] Current time: {now_iso} IST. Reply language: "
              f"{ {'hi': 'Hindi (Devanagari)', 'hinglish': 'Hinglish (Roman script)', 'en': 'English'}[lang] }."]
     if last_location:
         lines.append(f"User shared location: {last_location['lat']:.4f}, {last_location['lon']:.4f}"
                      + (f" ({last_location['label']})" if last_location.get("label") else ""))
+    known = [PROFILE_WORDS[p] for p in (profile or []) if p in PROFILE_WORDS]
+    if known:   # set by the user in their settings; get_heat_plan already applies it
+        lines.append("User's saved safety profile: the user " + "; ".join(known)
+                     + ". Tailor the advice to this, without repeating it back unless it matters.")
+    if shift:
+        lines.append(f"User's usual outdoor shift: {shift['start']} to {shift['end']} IST. Focus the plan on these hours.")
     return "\n".join(lines)

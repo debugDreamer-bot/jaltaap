@@ -1,11 +1,13 @@
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { currentLang, setLang } from '../i18n'
+import { useSettings } from '../lib/settings'
 import { Link } from '../router'
 import { Icon } from './Icon'
 
 const LINKS = [
   { href: '/map', key: 'nav.map' },
+  { href: '/me', key: 'nav.me' },
   { href: '/crew', key: 'nav.crew' },
   { href: '/about', key: 'nav.about' },
   { href: '/officer', key: 'nav.officer' },
@@ -15,6 +17,7 @@ export function Header({ path }: { path: string }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const lang = currentLang()
+  const { live } = useSettings()
 
   const nav = (cls: string) =>
     LINKS.map((l) => (
@@ -26,6 +29,9 @@ export function Header({ path }: { path: string }) {
         className={`${cls} rounded-full px-3.5 py-2 font-semibold text-white/85 transition-colors hover:bg-white/10 hover:text-white aria-[current=page]:bg-white/15 aria-[current=page]:text-white`}
       >
         {t(l.key)}
+        {l.href === '/me' && live && (
+          <span className="ms-1.5 inline-block h-2 w-2 rounded-full bg-[#40c057] align-middle" aria-label={t('nav.liveOn')} role="img" />
+        )}
       </Link>
     ))
 

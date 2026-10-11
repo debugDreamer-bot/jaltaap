@@ -220,6 +220,37 @@ COPY: dict[str, dict[str, str]] = {
         "hi": "आपकी जगह के पास {hazards} के अलर्ट चालू हैं। सब बंद करने के लिए STOP भेजें।",
         "hinglish": "Aapki jagah ke paas {hazards} ke alerts chaalu hain. Sab band karne ke liye STOP bhejein.",
     },
+    # live location (Telegram): fixed templates, sent only when the risk where the user is changes
+    "live_started": {
+        "en": "Live location is on. I will message you only if heat, rain or air turns risky where you are.",
+        "hi": "लाइव लोकेशन चालू है। जहाँ आप हैं वहाँ गर्मी, बारिश या हवा खतरनाक होगी, तभी मैं संदेश भेजूँगा।",
+        "hinglish": "Live location chaalu hai. Jahan aap hain wahan garmi, baarish ya hawa khatarnaak hogi, tabhi main message bhejunga.",
+    },
+    "live_heat": {
+        "en": "JalTaap heat warning where you are now: {band} in the next 3 hours ({temp}°C). Stop heavy work, move to shade and drink water every 20 minutes. {footer}",
+        "hi": "आप जहाँ हैं वहाँ जलताप गर्मी चेतावनी: अगले 3 घंटे {band} ({temp}°C)। भारी काम रोकें, छाँव में जाएँ और हर 20 मिनट पानी पिएँ। {footer}",
+        "hinglish": "Aap jahan hain wahan JalTaap garmi warning: agle 3 ghante {band} ({temp}°C). Bhaari kaam rokein, chhaon mein jaayein aur har 20 minute paani piyein. {footer}",
+    },
+    "live_rain": {
+        "en": "JalTaap rain warning where you are now: {level} waterlogging risk in the next 3 hours ({rain} mm of rain expected). Avoid underpasses and low roads. {footer}",
+        "hi": "आप जहाँ हैं वहाँ जलताप बारिश चेतावनी: अगले 3 घंटे में जलभराव का खतरा {level} ({rain} मिमी बारिश का अनुमान)। अंडरपास और निचली सड़कों से बचें। {footer}",
+        "hinglish": "Aap jahan hain wahan JalTaap baarish warning: agle 3 ghante mein paani bharne ka khatra {level} ({rain} mm baarish ka anumaan). Underpass aur neechi sadkon se bachein. {footer}",
+    },
+    "live_air": {
+        "en": "JalTaap air warning where you are now: {cat} (AQI about {aqi}, an estimate). Wear an N95 mask and cut down heavy work outdoors. {footer}",
+        "hi": "आप जहाँ हैं वहाँ जलताप हवा चेतावनी: {cat} (AQI लगभग {aqi}, अनुमान)। N95 मास्क पहनें और बाहर भारी काम कम करें। {footer}",
+        "hinglish": "Aap jahan hain wahan JalTaap hawa warning: {cat} (AQI lagbhag {aqi}, anumaan). N95 mask pehnein aur bahar bhaari kaam kam karein. {footer}",
+    },
+    "live_uv": {
+        "en": "JalTaap sun warning where you are now: UV index {uv}. Cover your head, wear full sleeves and take shade breaks. {footer}",
+        "hi": "आप जहाँ हैं वहाँ जलताप धूप चेतावनी: UV इंडेक्स {uv}। सिर ढकें, पूरी बाँह के कपड़े पहनें और छाँव में आराम करें। {footer}",
+        "hinglish": "Aap jahan hain wahan JalTaap dhoop warning: UV index {uv}. Sir dhakein, poori baanh ke kapde pehnein aur chhaon mein aaram karein. {footer}",
+    },
+    "live_clear": {
+        "en": "Conditions where you are now are back to safer levels. Keep drinking water. {footer}",
+        "hi": "आप जहाँ हैं वहाँ हालात अब पहले से सुरक्षित हैं। पानी पीते रहें। {footer}",
+        "hinglish": "Aap jahan hain wahan halaat ab pehle se safe hain. Paani peete rahein. {footer}",
+    },
 }
 
 BAND_WORDS = {

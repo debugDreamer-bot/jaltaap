@@ -6,8 +6,11 @@ import { USE_MOCK, config } from '../config'
 import { currentLang } from '../i18n'
 import { geoErrorCode, getLocation, type Coords } from '../lib/geo'
 import { resizeToJpeg } from '../lib/image'
+import { useLiveSafety } from '../lib/liveSafety'
+import { useSettings } from '../lib/settings'
 import { getSessionId } from '../lib/storage'
 import { formatDateTime } from '../lib/time'
+import { Link } from '../router'
 import { Icon } from './Icon'
 import { Linkify } from './Linkify'
 import { MockBanner } from './MockBanner'
@@ -59,13 +62,16 @@ async function pollStatus(id: string, alive: () => boolean): Promise<{ status: s
   return { status, verdict }
 }
 
-export default function ChatDrawer({ onClose }: { onClose: () => void }) {
+export default function ChatDrawer({ onClose, prompt }: { onClose: () => void; prompt?: string | null }) {
   const { t } = useTranslation()
   const lang = currentLang()
+  const { flags, shift } = useSettings()
+  const live = useLiveSafety()
   const [messages, setMessages] = useState<Msg[]>([])
-  const [input, setInput] = useState('')
+  const [input, setInput] = useState(prompt ?? '')
   const [pending, setPending] = useState(false)
-  const [coords, setCoords] = useState<Coords | null>(null)
+  const [shared, setCoords] = useState<Coords | null>(null)
+  const coords = shared ?? live.coords   // a pin the user shared here wins over the live location
   const [locating, setLocating] = useState(false)
   const [photo, setPhoto] = useState<PhotoStep>({ step: 'closed' })
   const [note, setNote] = useState('')
@@ -108,6 +114,8 @@ export default function ChatDrawer({ onClose }: { onClose: () => void }) {
         session_id: getSessionId(),
         message,
         ...(coords ? { lat: coords.lat, lon: coords.lon } : {}),
+        ...(flags.length ? { profile: flags } : {}),
+        ...(shift ? { shift } : {}),
       })
       push({ role: 'bot', text: typeof res.reply === 'string' ? res.reply : '', updatedAt: res.data_updated_at ?? null })
     } catch (e) {
@@ -223,6 +231,13 @@ export default function ChatDrawer({ onClose }: { onClose: () => void }) {
           <p className="rounded-lg bg-white p-3 text-muted">
             {t('chat.intro')} <strong className="text-ink">{t('chat.emergency')}</strong>
           </p>
+          <p className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 text-[15px]">
+            <Icon name="shield" size={18} className="shrink-0 text-brand" />
+            <span className="flex-1">{flags.length ? t('chat.personalised', { count: flags.length }) : t('chat.notPersonalised')}</span>
+            <Link href="/me" onClick={onClose} className="font-semibold text-brand underline">
+              {flags.length ? t('chat.editProfile') : t('chat.setProfile')}
+            </Link>
+          </p>
           {!apiReady && <p className="rounded-lg border-2 border-[#c92a2a] bg-white p-3 font-semibold">{t('chat.notConfigured')}</p>}
           {messages.map((m) =>
             m.role === 'user' ? (
@@ -336,7 +351,7 @@ export default function ChatDrawer({ onClose }: { onClose: () => void }) {
                 className="inline-flex min-h-11 items-center gap-2 rounded-lg border-2 border-line px-3 py-1.5 font-semibold disabled:opacity-60"
               >
                 <Icon name="location" size={20} />
-                {locating ? t('chat.locating') : coords ? t('chat.locationOn') : t('chat.useLocation')}
+                {locating ? t('chat.locating') : shared ? t('chat.locationOn') : live.coords ? t('chat.locationLive') : t('chat.useLocation')}
               </button>
               <button
                 type="button"
@@ -355,7 +370,7 @@ export default function ChatDrawer({ onClose }: { onClose: () => void }) {
               <textarea
                 id="chat-input"
                 ref={inputRef}
-                rows={1}
+                rows={input.length > 40 ? 3 : 1}
                 maxLength={1000}
                 value={input}
                 placeholder={t('chat.placeholder')}

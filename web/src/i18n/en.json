@@ -13,7 +13,9 @@
     "skip": "Skip to content",
     "crew": "Crew plan",
     "check": "Check my area",
-    "checkShort": "Check"
+    "checkShort": "Check",
+    "me": "My safety",
+    "liveOn": "Live safety is on"
   },
   "mock": {
     "banner": "MOCK DATA — development only"
@@ -169,7 +171,14 @@
     "quickCrew": "Crew plan",
     "quickCrewMsg": "Make a heat schedule for my crew of 20 today",
     "quickWater": "Water problem",
-    "quickWaterMsg": "I want to report a drinking water problem"
+    "quickWaterMsg": "I want to report a drinking water problem",
+    "fab": "Ask JalTaap",
+    "personalised_one": "Answers are personalised to your safety profile (1 factor).",
+    "personalised_other": "Answers are personalised to your safety profile ({{count}} factors).",
+    "notPersonalised": "Tell us a little about you for advice that fits you.",
+    "editProfile": "Edit",
+    "setProfile": "Personalise",
+    "locationLive": "Using live location"
   },
   "photo": {
     "button": "Report photo",
@@ -600,7 +609,8 @@
       "ctaMap": "Open the live map",
       "proof1": "Free on WhatsApp",
       "proof2": "Speaks Hindi",
-      "proof3": "No app, no sign-up"
+      "proof3": "No app, no sign-up",
+      "ctaChat": "Ask JalTaap"
     },
     "chat": {
       "status": "online",
@@ -713,7 +723,19 @@
       "title": "Make today a safe day at work.",
       "body": "Check your area now, or plan the day for your whole crew."
     },
-    "footerNote": "Weather and air data are modelled forecasts, not station readings. Not an official warning service. In an emergency, call 112."
+    "footerNote": "Weather and air data are modelled forecasts, not station readings. Not an official warning service. In an emergency, call 112.",
+    "personal": {
+      "eyebrow": "New: personal live safety",
+      "title": "Warnings for you, where you are",
+      "body": "JalTaap follows your location while you work and tells you before heat, rain or polluted air turns dangerous, adjusted to your age, health and the work you do.",
+      "c1Title": "Personal to you",
+      "c1": "Heavy work, age 60+, pregnancy, a long-term illness or being new to the heat: each makes the advice stricter, as health guidelines recommend.",
+      "c2Title": "Follows where you go",
+      "c2": "Live location keeps the next 3 hours of heat, rain, air and sun fresh as you move across the city.",
+      "c3Title": "Warns only when it matters",
+      "c3": "One clear warning when risk rises, one all-clear when it passes. On the web or on Telegram, with no spam.",
+      "cta": "Set up my safety"
+    }
   },
   "shift": {
     "title": "Remind me during work",
@@ -773,5 +795,138 @@
     "back": "Change what I picked",
     "notDiagnosis": "This is first aid, not a diagnosis. When in doubt, call 112.",
     "toCheck": "Back to today's work plan"
+  },
+  "live": {
+    "severity": {
+      "1": "Advisory",
+      "2": "Warning",
+      "3": "Danger"
+    },
+    "heat": "{{band}} heat where you are in the next 3 hours ({{temp}}°C).",
+    "heatDo": "Stop heavy work, rest in shade and drink water every 20 minutes.",
+    "rain": "{{level}} waterlogging risk in the next 3 hours ({{rain}} mm of rain).",
+    "rainDo": "Avoid underpasses and low roads.",
+    "air": "Air quality is {{cat}} (AQI about {{aqi}}, an estimate).",
+    "airDo": "Wear an N95 mask and cut down heavy work outdoors.",
+    "airSensitiveDo": "Take it easy outdoors: polluted air is harder on you.",
+    "uv": "Very strong sun right now (UV {{uv}}).",
+    "uvDo": "Cover your head, wear full sleeves and take shade breaks.",
+    "more_one": "+1 more",
+    "more_other": "+{{count}} more",
+    "ask": "Ask what to do",
+    "askPrompt": "I got this warning where I am: \"{{warning}}\" What should I do right now?",
+    "details": "Details",
+    "dismiss": "Hide this warning"
+  },
+  "me": {
+    "eyebrow": "Personal and private",
+    "title": "My safety",
+    "sub": "Tell JalTaap about yourself and turn on live safety. Advice and warnings then fit you and the place you are standing in.",
+    "ask": "Ask about my area",
+    "askPrompt": "What should I watch out for where I am right now?",
+    "live": {
+      "title": "Live safety warnings",
+      "body": "While this app is open, JalTaap follows your location and warns you if heat, heavy rain, polluted air or strong sun turns risky in the next 3 hours.",
+      "off": "Live safety is off.",
+      "locating": "Finding your location…",
+      "on": "Watching your area. Last checked {{time}}; checks again when you move 500 m or every 10 minutes.",
+      "outside": "You seem to be outside India. JalTaap covers India only.",
+      "error": "Could not get conditions right now. JalTaap will try again soon.",
+      "heatNow": "Heat now",
+      "airNow": "Air now",
+      "rainNext": "Rain, next 3 h",
+      "uvNow": "UV now",
+      "clear": "All clear where you are for the next 3 hours. Keep drinking water.",
+      "checkNow": "Check now"
+    },
+    "profile": {
+      "title": "About you",
+      "body": "Each one you tick makes heat advice one step stricter for you, as health guidelines recommend. Tick only what is true."
+    },
+    "flags": {
+      "heavy_work": {
+        "title": "I do heavy physical work",
+        "body": "Construction, loading, digging, carrying or pulling loads."
+      },
+      "age_60_plus": {
+        "title": "I am 60 or older",
+        "body": "The body cools down more slowly with age."
+      },
+      "pregnant": {
+        "title": "I am pregnant",
+        "body": "Heat puts extra strain on the body during pregnancy."
+      },
+      "chronic_illness": {
+        "title": "I have a long-term illness",
+        "body": "Heart, lung or kidney disease, diabetes or high blood pressure."
+      },
+      "not_acclimatised": {
+        "title": "I am new to this heat",
+        "body": "Arrived in the last two weeks, or back after a long break."
+      }
+    },
+    "notify": {
+      "title": "Phone notifications",
+      "body": "Get a notification when a new warning starts, even when you are on another page.",
+      "denied": "Notifications are blocked for this site. Allow them in your browser settings to turn this on.",
+      "unsupported": "This browser cannot show notifications.",
+      "needLive": "Turn on live safety above to get warnings."
+    },
+    "telegram": {
+      "title": "Warnings on Telegram, even with the app closed",
+      "s1": "Open the JalTaap bot in Telegram and say hello.",
+      "s2": "Tap 📎 → Location → Share My Live Location, and choose how long.",
+      "s3": "JalTaap messages you only when the risk where you are changes."
+    },
+    "privacy": {
+      "title": "Your privacy",
+      "p1": "Your profile and settings are saved only on this device.",
+      "p2": "To get the forecast, only a rounded location (about 100 m) is sent. JalTaap does not store it.",
+      "p3": "JalTaap never asks for your name, phone number or Aadhaar.",
+      "reset": "Clear my settings"
+    },
+    "map": {
+      "title": "You are here",
+      "you": "You",
+      "clear": "No warnings here for the next 3 hours.",
+      "accuracy": "Location accuracy",
+      "metres": "about {{m}} m",
+      "checked": "Last checked",
+      "personalised": "Personalised to your safety profile.",
+      "open": "Open My safety",
+      "locate": "Show my location"
+    },
+    "day": {
+      "title": "Your day, personalised",
+      "forYou": "For you today",
+      "forMost": "For most people",
+      "because": "Stricter because:",
+      "onlyWarm": "Your profile makes advice stricter only on warmer days (Yellow and above). Today is low-risk for everyone.",
+      "noProfile": "Tick what applies to you below and this plan becomes yours.",
+      "shift": "Your shift: {{from}}–{{to}}",
+      "noShift": "Add your working hours below to see the plan for your shift.",
+      "heavy": "Heavy work is safer: {{w}}",
+      "noHeavy": "No heavy work in your hours today.",
+      "avoid": "Avoid heavy work: {{w}}",
+      "noon": "Rest from outdoor work {{from}}–{{to}}.",
+      "water_one": "Drink 1 glass of water (250 ml) every hour.",
+      "water_other": "Drink {{count}} glasses of water (250 ml) every hour.",
+      "peak": "Hottest at {{time}} ({{temp}}°C)."
+    },
+    "why": {
+      "hot_night": "Hot night",
+      "duration": "Heatwave streak",
+      "profile_heavy_work": "Heavy work",
+      "profile_age_60_plus": "Age 60+",
+      "profile_pregnant": "Pregnancy",
+      "profile_chronic_illness": "Long-term illness",
+      "profile_not_acclimatised": "New to the heat"
+    },
+    "shift": {
+      "title": "I have fixed working hours",
+      "body": "Your day plan and the chat then focus on these hours.",
+      "start": "From",
+      "end": "To"
+    }
   }
 }

@@ -99,9 +99,12 @@ Public pins. No user data, ever.
 ```
 Scenarios: `heat-2026-05-22`, `flood-2026-07-09`, `humid-heat-<yyyy-mm-dd>`.
 
-### `GET /now?lat=&lon=&label=`
-One screen of answers for any point in India (backs the worker view and dashboards). Rate-limited
-per IP. 503 if the forecast is unavailable.
+### `GET /now?lat=&lon=&label=&profile=`
+One screen of answers for any point in India (backs the worker view, dashboards and live safety).
+Rate-limited per IP. 503 if the forecast is unavailable. `profile` is an optional comma-separated
+list of `heavy_work`, `age_60_plus`, `pregnant`, `chronic_illness`, `not_acclimatised` (unknown
+flags are ignored); it raises today's bands by at most one (GREEN stays GREEN) and personalises
+`warnings`.
 ```json
 {"location": {"lat": 22.57, "lon": 88.36, "label": "Kolkata", "city": "Kolkata", "city_id": "kolkata", "coverage": "heat_and_rain"},
  "now": {"time": "2026-10-09T21:00:00+05:30", "band": "GREEN", "temp_c": 28.1, "rh": 76, "wet_bulb_c": 24.0,
@@ -113,8 +116,14 @@ per IP. 503 if the forecast is unavailable.
  "uv": {"now": 0.0, "now_category": "LOW", "today_max": 4.6, "today_category": "MODERATE", "advice_keys": []},
  "hours": [{"time": "...", "band": "GREEN", "temp_c": 28.1, "rh": 76, "wet_bulb_c": 24.0, "rain_next_3h_mm": 0.0,
             "area_flood_level": "LOW", "uv_index": 0.0}],
+ "warnings": [{"hazard": "heat", "severity": 3, "level": "RED", "at": "2026-10-10T12:00:00+05:30", "temp_c": 32.6,
+               "wet_bulb_c": 28.1}],
  "source": "open-meteo", "data_updated_at": "..."}
 ```
+`warnings` covers the next 3 hours, most severe first (`risk/warnings.py`). `hazard` is `heat`
+(ORANGE 2, RED 3), `rain` (area level MEDIUM 1, HIGH 2, SEVERE 3; adds `rain_mm`), `air` (POOR 2,
+VERY_POOR/SEVERE 3, MODERATE 1 for age 60+, pregnancy or chronic illness; adds `aqi`) or `uv`
+(VERY_HIGH 1, EXTREME 2; adds `uv_index`). Severity 1 is an advisory; clients interrupt only for 2+.
 `air` is an India AQI estimate from modelled PM2.5/PM10 (CPCB breakpoints); it and `uv` are null
 when the air-quality API is unavailable.
 
@@ -138,8 +147,9 @@ rest minutes, `rotation` of staggered rest groups, water per worker), `water`
 ## Session-scoped (random `session_id`, rate-limited per session and IP)
 
 ### `POST /chat`
-Request: `{"session_id": "uuid", "message": "Najafgarh mein kaam kab karun?", "lat": 28.61, "lon": 76.98}`
-(`lat`/`lon` optional). Response within 25 s:
+Request: `{"session_id": "uuid", "message": "Najafgarh mein kaam kab karun?", "lat": 28.61, "lon": 76.98, "profile": ["heavy_work"]}`
+(`lat`/`lon` and `profile` optional; `profile` takes the same flags as `/now`, kept on the user's
+device and sent with each message). Response within 25 s:
 ```json
 {"reply": "plain text with links", "data_updated_at": "2026-10-09T17:05:00+05:30"}
 ```

@@ -16,13 +16,13 @@ from common import dynamo, i18n, refdata, water
 from common.geo import directions_url, geohash, haversine_m, point_to_segment_m
 from common.config import settings
 from common.ids import now_ist
+from common.models import PROFILE_FLAGS
 from risk import grid as gridmod
 from risk import service
 from risk.crew import crew_schedule
 from risk.flood import LEVEL_ORDER, level_index
 from risk.grid import in_india
 
-PROFILE_FLAGS = ["heavy_work", "age_60_plus", "pregnant", "chronic_illness", "not_acclimatised"]
 HAZARDS = ["heat", "flood"]
 RELIEF_MAX_KM = 25          # never send someone to a cooling zone in another city
 HELPLINES = "112 (emergency), 1070 (state disaster control room), 1077 (district control room)"
@@ -35,6 +35,7 @@ class UserContext:
     lang: str = "en"
     last_location: dict | None = None
     profile: list[str] = field(default_factory=list)
+    shift: dict | None = None            # {"start": "08:00", "end": "18:00"} from the user's settings
     # filled while the agent runs
     tools_called: list[str] = field(default_factory=list)
     data_updated_at: str | None = None

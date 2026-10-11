@@ -1,6 +1,9 @@
 import { lazy, Suspense } from 'react'
 import { useTranslation } from 'react-i18next'
+import { ChatLauncher } from './components/ChatLauncher'
 import { Header } from './components/Header'
+import { LiveSafetyProvider } from './components/LiveSafetyProvider'
+import { LiveWarningBanner } from './components/LiveWarningBanner'
 import { MockBanner } from './components/MockBanner'
 import { usePath } from './lib/nav'
 import { Link } from './router'
@@ -15,6 +18,7 @@ const AboutPage = lazy(() => import('./pages/AboutPage'))
 const OfficerPage = lazy(() => import('./pages/officer/OfficerPage'))
 const CrewPage = lazy(() => import('./pages/CrewPage'))
 const UnwellPage = lazy(() => import('./pages/UnwellPage'))
+const SafetyPage = lazy(() => import('./pages/SafetyPage'))
 
 function Loading() {
   const { t } = useTranslation()
@@ -47,15 +51,20 @@ export default function App() {
   else if (path === '/officer') page = <OfficerPage />
   else if (path === '/crew') page = <CrewPage />
   else if (path === '/unwell') page = <UnwellPage />
+  else if (path === '/me') page = <SafetyPage />
   else page = <NotFound />
 
   return (
-    <div className="flex h-full flex-col">
-      <MockBanner />
-      <Header path={path} />
-      <main id="main" className={`relative min-h-0 flex-1 ${path === '/map' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
-        <Suspense fallback={<Loading />}>{page}</Suspense>
-      </main>
-    </div>
+    <LiveSafetyProvider>
+      <div className="flex h-full flex-col">
+        <MockBanner />
+        <Header path={path} />
+        {path !== '/officer' && <LiveWarningBanner />}
+        <main id="main" className={`relative min-h-0 flex-1 ${path === '/map' ? 'overflow-hidden' : 'overflow-y-auto'}`}>
+          <Suspense fallback={<Loading />}>{page}</Suspense>
+        </main>
+        <ChatLauncher path={path} />
+      </div>
+    </LiveSafetyProvider>
   )
 }

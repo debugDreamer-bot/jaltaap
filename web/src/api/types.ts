@@ -222,11 +222,17 @@ export interface ReplayScenario {
   hours: ReplayHour[]
 }
 
+/** Personal heat-risk factors the risk engine knows; each makes the advice at most one band stricter. */
+export type ProfileFlag = 'heavy_work' | 'age_60_plus' | 'pregnant' | 'chronic_illness' | 'not_acclimatised'
+
 export interface ChatRequest {
   session_id: string
   message: string
   lat?: number
   lon?: number
+  profile?: ProfileFlag[]
+  /** Usual outdoor working hours, IST 24-hour HH:MM. */
+  shift?: { start: string; end: string }
 }
 
 export interface ChatResponse {
@@ -283,6 +289,10 @@ export interface NowResponse {
   today: {
     date: string
     day_band: HeatBand
+    /** The band for most people, before personal and environmental escalation. */
+    base_day_band?: HeatBand
+    /** Why the band went up: "hot_night", "duration", "profile:<flag>". */
+    escalations?: string[]
     blocks: Array<{ from: string; to: string; band: HeatBand }>
     heavy_work_windows: Array<{ from: string; to: string }>
     avoid_windows: Array<{ from: string; to: string }>
@@ -302,6 +312,23 @@ export interface NowResponse {
     max_temp_c: number | null
     max_wet_bulb_c: number | null
   }>
+  /** Next-3-hour warnings at this point (backend risk/warnings.py), most severe first. */
+  warnings?: LiveWarning[]
   source: string
   data_updated_at: string
+}
+
+export type LiveHazard = 'heat' | 'rain' | 'air' | 'uv'
+
+/** Severity 1 advisory, 2 warning, 3 danger. `level` is a HeatBand, FloodLevel, AqiCategory or UvCategory. */
+export interface LiveWarning {
+  hazard: LiveHazard
+  severity: 1 | 2 | 3
+  level: string
+  at?: string
+  temp_c?: number | null
+  wet_bulb_c?: number | null
+  rain_mm?: number | null
+  aqi?: number | null
+  uv_index?: number | null
 }

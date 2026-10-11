@@ -284,7 +284,7 @@ def poll_telegram(token: str) -> None:
     while True:
         try:
             r = httpx.get(f"{api}/getUpdates", timeout=70,
-                          params={"timeout": 50, "offset": offset, "allowed_updates": '["message"]'})
+                          params={"timeout": 50, "offset": offset, "allowed_updates": '["message", "edited_message"]'})
             updates = r.json().get("result", [])
         except (httpx.HTTPError, ValueError) as err:
             sys.stderr.write(f"telegram poll failed: {err!r}; retrying\n")
@@ -295,9 +295,10 @@ def poll_telegram(token: str) -> None:
             for msg in telegram.parse_update(update):
                 if not dynamo.claim_message("telegram", msg.message_id):
                     continue
-                try:   # the local model is slow; show "typing…" while it works
-                    httpx.post(f"{api}/sendChatAction", json={"chat_id": msg.channel_user_id, "action": "typing"},
-                               timeout=10)
+                try:   # the local model is slow; show "typing…" while it works (live moves skip the model)
+                    if msg.live != "update":
+                        httpx.post(f"{api}/sendChatAction", json={"chat_id": msg.channel_user_id, "action": "typing"},
+                                   timeout=10)
                     worker.process(msg)
                 except Exception:  # noqa: BLE001 - keep polling; the deployed worker would retry via SQS
                     traceback.print_exc()

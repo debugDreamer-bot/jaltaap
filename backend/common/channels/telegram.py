@@ -25,9 +25,14 @@ def parse_update(update: dict) -> list[InboundMessage]:
                 timestamp=msg.get("date"))
     if not chat_id:
         return []
+    if "message" not in update and "location" not in msg:
+        return []   # edits matter only as live-location moves; an edited text is not a new question
     if "location" in msg:
         loc = msg["location"]
-        return [InboundMessage(**base, type="location", lat=loc.get("latitude"), lon=loc.get("longitude"))]
+        # live location: the first pin has live_period; each move arrives as an edited_message
+        edited = "message" not in update
+        live = "update" if edited else ("start" if loc.get("live_period") else None)
+        return [InboundMessage(**base, type="location", lat=loc.get("latitude"), lon=loc.get("longitude"), live=live)]
     if "photo" in msg:
         largest = max(msg["photo"], key=lambda p: p.get("file_size", 0) or p.get("width", 0))
         return [InboundMessage(**base, type="image", media_id=largest.get("file_id"), caption=msg.get("caption"))]

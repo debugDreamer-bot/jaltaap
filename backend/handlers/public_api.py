@@ -12,7 +12,7 @@ from common.aws import client
 from common.config import VERSION, settings
 from common.http import error, json_body, query, respond, source_ip
 from common.ids import hour_iso, iso, new_ulid, now_ist, user_hash
-from common.models import UploadUrlRequest
+from common.models import UploadUrlRequest, clean_profile
 from common.obs import logger, metrics, tracer
 from risk import grid as gridmod
 from risk import service
@@ -125,7 +125,8 @@ def public_reports(event) -> dict:
 
 
 def now(event) -> dict:
-    """GET /now?lat=&lon=: heat now and next 48 h, today's safe windows, rain, AQI estimate and UV."""
+    """GET /now?lat=&lon=[&profile=heavy_work,...]: heat now and next 48 h, today's safe windows, rain,
+    AQI estimate, UV and live warnings, personalised when a profile is given."""
     q = query(event)
     if not dynamo.rate_limit(f"now#ip#{source_ip(event)}", 60, 60):
         return error(429, "too many requests, please wait a minute")
@@ -136,7 +137,8 @@ def now(event) -> dict:
     if not gridmod.in_india(lat, lon):
         return error(400, "location is outside India")
     try:
-        body = service.now_summary(lat, lon, label=(q.get("label") or "")[:60])
+        body = service.now_summary(lat, lon, label=(q.get("label") or "")[:60],
+                                   profile=clean_profile((q.get("profile") or "").split(",")))
     except Exception:  # noqa: BLE001
         logger.exception("now summary failed")
         return error(503, "forecast unavailable right now")

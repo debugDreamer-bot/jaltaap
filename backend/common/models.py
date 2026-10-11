@@ -7,6 +7,14 @@ from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 Channel = Literal["whatsapp", "telegram", "web"]
 MessageType = Literal["text", "location", "image", "audio", "interactive", "unknown"]
+# Personal risk factors the heat engine knows (risk.yaml heat.escalate.profile_flags); each adds at most +1 band.
+PROFILE_FLAGS = ("heavy_work", "age_60_plus", "pregnant", "chronic_illness", "not_acclimatised")
+
+
+def clean_profile(flags) -> list[str]:
+    """Known flags only, in a stable order; anything else is dropped silently."""
+    given = set(flags or [])
+    return [f for f in PROFILE_FLAGS if f in given]
 
 
 class InboundMessage(BaseModel):
@@ -21,6 +29,7 @@ class InboundMessage(BaseModel):
     media_id: str | None = None   # WhatsApp media id or Telegram file_id
     caption: str | None = None
     timestamp: int | None = None
+    live: Literal["start", "update"] | None = None   # Telegram live location: first pin, then each move
 
 
 class PhotoVerdict(BaseModel):
@@ -46,11 +55,24 @@ class PhotoVerdict(BaseModel):
         return v
 
 
+class Shift(BaseModel):
+    """The user's usual outdoor working hours, from their settings (IST, 24-hour HH:MM)."""
+    start: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+    end: str = Field(pattern=r"^([01]\d|2[0-3]):[0-5]\d$")
+
+
 class ChatRequest(BaseModel):
     session_id: str = Field(min_length=8, max_length=64)
     message: str = Field(min_length=1, max_length=1000)
     lat: float | None = None
     lon: float | None = None
+    profile: list[str] = Field(default_factory=list, max_length=len(PROFILE_FLAGS))
+    shift: Shift | None = None
+
+    @field_validator("profile", mode="after")
+    @classmethod
+    def _known_flags(cls, v: list[str]) -> list[str]:
+        return clean_profile(v)
 
 
 class UploadUrlRequest(BaseModel):

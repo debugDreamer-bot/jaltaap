@@ -6,6 +6,7 @@ import { useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode }
 import { useTranslation } from 'react-i18next'
 import { AnimatePresence, m, useScroll, useSpring } from 'motion/react'
 import { Counter, MotionPage, Reveal } from '../components/motion'
+import { openChat } from '../lib/chat'
 import { ease } from '../lib/ease'
 import { getCities, getHeat } from '../api/endpoints'
 import type { City, HeatResponse } from '../api/types'
@@ -319,6 +320,9 @@ export default function LandingPage() {
                   <Icon name="location" size={22} />{t('landing.hero.ctaCheck')}
                   <Icon name="arrow-right" size={20} className="transition-transform group-hover:translate-x-1" />
                 </Link>
+                <button type="button" onClick={() => openChat()} className="jt-glass inline-flex min-h-14 items-center gap-2 rounded-2xl px-6 text-lg font-semibold text-white transition-colors hover:bg-white/15">
+                  <Icon name="chat" size={22} />{t('landing.hero.ctaChat')}
+                </button>
                 <Link href="/map" className="jt-glass inline-flex min-h-14 items-center gap-2 rounded-2xl px-6 text-lg font-semibold text-white transition-colors hover:bg-white/15">
                   <Icon name="map" size={22} />{t('landing.hero.ctaMap')}
                 </Link>
@@ -368,6 +372,36 @@ export default function LandingPage() {
                 </div>
               </Reveal>
             ))}
+          </div>
+        </section>
+
+        {/* ---------- personal live safety ---------- */}
+        <section className="bg-white py-20">
+          <div className="mx-auto max-w-6xl px-4 sm:px-6">
+            <Reveal className="max-w-2xl">
+              <Eyebrow>{t('landing.personal.eyebrow')}</Eyebrow>
+              <h2 className="text-3xl font-extrabold tracking-tight sm:text-5xl">{t('landing.personal.title')}</h2>
+              <p className="mt-4 text-lg text-muted">{t('landing.personal.body')}</p>
+            </Reveal>
+            <div className="mt-10 grid gap-4 md:grid-cols-3">
+              {([['shield', 'c1'], ['location', 'c2'], ['bell', 'c3']] as const).map(([icon, k], i) => (
+                <Reveal key={k} delay={i * 0.08}>
+                  <div className="h-full rounded-3xl border border-line bg-canvas p-6">
+                    <span className="inline-flex h-12 w-12 items-center justify-center rounded-2xl bg-brand text-white"><Icon name={icon} size={26} /></span>
+                    <h3 className="mt-4 text-xl font-extrabold">{t(`landing.personal.${k}Title`)}</h3>
+                    <p className="mt-2 text-muted">{t(`landing.personal.${k}`)}</p>
+                  </div>
+                </Reveal>
+              ))}
+            </div>
+            <Reveal className="mt-8 flex flex-wrap gap-3">
+              <Link href="/me" className="inline-flex min-h-14 items-center gap-2 rounded-2xl bg-brand px-6 text-lg font-bold text-white hover:bg-brand-dark">
+                <Icon name="shield" size={22} />{t('landing.personal.cta')}<Icon name="arrow-right" size={20} />
+              </Link>
+              <button type="button" onClick={() => openChat()} className="inline-flex min-h-14 items-center gap-2 rounded-2xl border-2 border-brand px-6 text-lg font-bold text-brand">
+                <Icon name="chat" size={22} />{t('landing.hero.ctaChat')}
+              </button>
+            </Reveal>
           </div>
         </section>
 

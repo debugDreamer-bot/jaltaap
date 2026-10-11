@@ -201,3 +201,35 @@ export function waterIssuePopup(w: WaterIssue): HTMLElement {
   root.appendChild(el('div', 'popup-meta', t('water.privacy')))
   return root
 }
+
+/** The user's own live position: personal heat now, the worst warning, and how fresh it is. */
+export interface MeInfo {
+  band: HeatBand | null
+  temp_c: number | null
+  warning: string | null
+  accuracy: number | null
+  checkedAt: number | null
+  personalised: boolean
+  onOpenSafety: () => void
+}
+
+export function mePopup(me: MeInfo): HTMLElement {
+  const root = el('div')
+  root.appendChild(el('div', 'popup-title', t('me.map.title')))
+  if (me.band && isHeatBand(me.band)) {
+    const col = HEAT_COLORS[me.band]
+    const temp = typeof me.temp_c === 'number' ? ` · ${Math.round(me.temp_c)}°C` : ''
+    root.appendChild(badge(col.fill, col.ink, HEAT_ICON[me.band], `${t(`bands.${me.band}`)}${temp}`))
+  }
+  root.appendChild(el('p', 'popup-note', me.warning ?? (me.band ? t('me.map.clear') : t('me.live.locating'))))
+  root.appendChild(rows([
+    [t('me.map.accuracy'), typeof me.accuracy === 'number' ? t('me.map.metres', { m: me.accuracy }) : null],
+    [t('me.map.checked'), me.checkedAt ? new Date(me.checkedAt).toLocaleTimeString(lang() === 'hi' ? 'hi-IN' : 'en-IN', { hour: '2-digit', minute: '2-digit' }) : null],
+  ]))
+  if (me.personalised) root.appendChild(el('div', 'popup-meta', t('me.map.personalised')))
+  const go = el('button', 'popup-link', t('me.map.open'))
+  go.type = 'button'
+  go.addEventListener('click', me.onOpenSafety)
+  root.appendChild(go)
+  return root
+}

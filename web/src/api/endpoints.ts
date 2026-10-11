@@ -30,8 +30,12 @@ export const getHeat = (time?: string, signal?: AbortSignal) =>
 
 export const getCities = (signal?: AbortSignal) => api<CitiesResponse>('/cities', { signal })
 
-export const getNow = (lat: number, lon: number, label?: string, signal?: AbortSignal) =>
-  api<NowResponse>(`/now${q({ lat: lat.toFixed(3), lon: lon.toFixed(3), label })}`, { signal, timeoutMs: 20_000 })
+/** Location is rounded to about 100 m before it leaves the device; `profile` personalises bands and warnings. */
+export const getNow = (lat: number, lon: number, label?: string, signal?: AbortSignal, profile?: string[]) =>
+  api<NowResponse>(
+    `/now${q({ lat: lat.toFixed(3), lon: lon.toFixed(3), label, profile: profile?.length ? profile.join(',') : undefined })}`,
+    { signal, timeoutMs: 20_000 },
+  )
 
 export const getWaterIssues = (signal?: AbortSignal) => api<WaterIssuesResponse>('/water-issues', { signal })
 

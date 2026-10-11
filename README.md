@@ -160,7 +160,7 @@ docs/                api-contract.md, writeup.md, blog.md, architecture.png
 
 ```bash
 python3 -m venv .venv && .venv/bin/pip install -r backend/requirements-dev.txt
-.venv/bin/pytest                                   # 191 tests: risk engine, air quality, crews, Cedar, voice, water, webhooks, APIs
+.venv/bin/pytest                                   # 211 tests: risk engine, air quality, crews, Cedar, voice, water, live safety, webhooks, APIs
 .venv/bin/python scripts/dev_api.py --port 8787    # real handlers on moto + live Open-Meteo
 cd web && npm install && VITE_API_URL=http://127.0.0.1:8787 npm run dev
 ```
@@ -168,6 +168,13 @@ cd web && npm install && VITE_API_URL=http://127.0.0.1:8787 npm run dev
 The dev API emulates DynamoDB, S3 and SQS. Bedrock cannot be emulated, so the agent runs free on
 a local [Ollama](https://ollama.com/) model instead (`ollama pull qwen3.5:9b`; pick another with
 `--model`). Deployed stacks always use Bedrock.
+
+**Personal live safety.** "My safety" (`/me`) stores a short health and work profile on the device
+and, when switched on, follows the device location while the app is open, warning about heat, rain,
+air and sun for the next 3 hours (banner, optional notification). The live map shows "you are here"
+with the heat where you stand. The chat is on every page and uses the same profile. On Telegram,
+sharing **Live Location** with the bot gives the same warnings with the app closed; moves never call
+the LLM (see DECISIONS.md).
 
 **Telegram bot, free and local.** Create a bot with @BotFather, put its token in a `.env` file
 at the repo root (gitignored) as `JALTAAP_SECRET_TELEGRAM_BOT_TOKEN=123456:ABC...`, then run

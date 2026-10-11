@@ -38,7 +38,8 @@ def handler(event, context):
         if not in_india(req.lat, req.lon):
             return respond(200, {"reply": i18n.t("outside_india", lang), "data_updated_at": None})
         loc = {"lat": req.lat, "lon": req.lon, "label": None}
-    out = answer(user_hash=uh, channel="web", lang=lang, text=req.message, last_location=loc)
+    out = answer(user_hash=uh, channel="web", lang=lang, text=req.message, last_location=loc, profile=req.profile,
+                 shift=req.shift.model_dump() if req.shift else None)
     metrics.add_metric(name="RepliesOut", unit=MetricUnit.Count, value=1)
     body = {"reply": out["reply"], "data_updated_at": out["data_updated_at"]}
     if _is_eval(event):   # evals/run_evals.py needs the tool trace for its grounding checks

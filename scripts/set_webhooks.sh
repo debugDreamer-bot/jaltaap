@@ -12,7 +12,7 @@ TOKEN=$(param telegram/bot_token)
 SECRET=$(param telegram/secret_token)
 curl -sS "https://api.telegram.org/bot${TOKEN}/setWebhook" \
   --data-urlencode "url=${TG_URL}" --data-urlencode "secret_token=${SECRET}" \
-  --data-urlencode 'allowed_updates=["message"]'
+  --data-urlencode 'allowed_updates=["message","edited_message"]'
 echo
 echo "WhatsApp: in Meta > WhatsApp > Configuration, set"
 echo "  Callback URL: $(out WhatsAppCallbackUrl)"

@@ -360,3 +360,17 @@ input[type="range"].slider {
   header, .print\:hidden { display: none !important; }
   main { overflow: visible !important; }
 }
+
+/* "You are here" on the live map: a blue dot, a soft halo in the colour of the heat where you are,
+   and a short label. The halo only pulses for people who allow motion. */
+.jt-me { display: flex; flex-direction: column; align-items: center; gap: 4px; cursor: pointer; }
+.jt-me-dot { position: relative; width: 22px; height: 22px; border-radius: 9999px; background: #1c7ed6;
+  border: 3px solid #fff; box-shadow: 0 0 0 1px rgb(0 0 0 / 0.25), 0 2px 8px rgb(0 0 0 / 0.35); }
+.jt-me-dot::after { content: ''; position: absolute; inset: -3px; border-radius: 9999px;
+  border: 3px solid var(--jt-me-halo, #1c7ed6); animation: jt-me-pulse 2s ease-out infinite; }
+.jt-me-label { white-space: nowrap; border-radius: 9999px; background: #fff; color: #1a1a1a; font-size: 13px;
+  font-weight: 700; line-height: 1; padding: 4px 8px; box-shadow: 0 1px 4px rgb(0 0 0 / 0.3); }
+@keyframes jt-me-pulse { from { transform: scale(1); opacity: 0.8; } to { transform: scale(2.8); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .jt-me-dot::after { animation: none; transform: scale(1.6); opacity: 0.5; } }
+.popup-note { margin: 6px 0; font-weight: 600; }
+.popup-link { margin-top: 6px; min-height: 44px; font-weight: 700; color: #0b3d5c; text-decoration: underline; }

@@ -9,7 +9,7 @@ import json
 from common.geo import geohash, geohash_decode
 
 from agent.session import answer, location_from_user
-from common import channels, dynamo, i18n
+from common import channels, dynamo, i18n, live_location
 from common.aws import client
 from common.config import settings
 from common.ids import new_ulid, now_ist, user_hash
@@ -102,6 +102,18 @@ def _voice_turn(msg: InboundMessage, uh: str, user: dict) -> None:
         logger.exception("voice reply failed")
 
 
+def _live_update(msg: InboundMessage, uh: str, user: dict, lang: str, baseline: bool = False) -> None:
+    try:
+        text, fields = live_location.check(user, msg.lat, msg.lon, lang, baseline=baseline)
+    except Exception:  # noqa: BLE001 - a missed check is retried on the next move; never fail the turn
+        logger.exception("live location check failed")
+        return
+    if text:
+        _send(msg, text)
+        metrics.add_metric(name="LiveWarningsOut", unit=MetricUnit.Count, value=1)
+    dynamo.update_user(uh, **fields)
+
+
 @tracer.capture_method
 def process(msg: InboundMessage) -> None:
     uh = user_hash(msg.channel, msg.channel_user_id)
@@ -124,6 +136,10 @@ def process(msg: InboundMessage) -> None:
         dynamo.update_user(uh, lang=lang)
 
     if msg.type == "location" and msg.lat is not None and msg.lon is not None:
+        if msg.live == "update":   # a move while sharing live location: no LLM, warn only on change
+            if in_india(msg.lat, msg.lon):
+                _live_update(msg, uh, user, lang)
+            return
         if not in_india(msg.lat, msg.lon):
             _send(msg, i18n.t("outside_india", lang))
             return
@@ -141,7 +157,11 @@ def process(msg: InboundMessage) -> None:
         out = answer(user_hash=uh, channel=msg.channel, lang=lang, last_location=loc, profile=user.get("profile"),
                      text=msg.text or "(The user shared a location pin. Answer their last question for this place, "
                                       "or give today's heat plan here.)")
-        _send(msg, out["reply"])
+        if msg.live == "start":
+            _send(msg, out["reply"] + "\n\n" + i18n.t("live_started", lang))
+            _live_update(msg, uh, user, lang, baseline=True)
+        else:
+            _send(msg, out["reply"])
         return
 
     if msg.type == "image" and msg.media_id:

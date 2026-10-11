@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import './setup'
-import { Map as MLMap, NavigationControl, Popup, type MapGeoJSONFeature, type GeoJSONSource } from 'maplibre-gl'
+import { Map as MLMap, Marker, NavigationControl, Popup, type MapGeoJSONFeature, type GeoJSONSource } from 'maplibre-gl'
 import { DELHI_CENTER, DELHI_ZOOM, OPENFREEMAP_STYLE, mapStyleUrl } from '../config'
 import { parseAttribution, type AttribItem } from '../lib/attribution'
 import { ageHours } from '../lib/time'
@@ -8,7 +8,7 @@ import { HEAT_COLORS, FLOOD_COLORS, HEAT_FILL_OPACITY } from '../theme'
 import type { FeatureCollection } from 'geojson'
 import type { PublicReport, ReliefPoint, WaterIssue } from '../api/types'
 import { addMapImages } from './images'
-import { heatPopup, hotspotPopup, reliefPopup, reportPopup, waterIssuePopup, type HeatCellInfo, type HotspotInfo } from './popups'
+import { heatPopup, hotspotPopup, mePopup, reliefPopup, reportPopup, waterIssuePopup, type HeatCellInfo, type HotspotInfo, type MeInfo } from './popups'
 
 
 export interface MapCell extends HeatCellInfo {
@@ -48,6 +48,13 @@ export interface MapFocus {
   key: string
 }
 
+/** The user's live position and what it means for them (from live safety). */
+export interface MapMe extends Omit<MeInfo, 'onOpenSafety'> {
+  lat: number
+  lon: number
+  label: string
+}
+
 interface Props {
   data: MapData
   visible: LayerVisibility
@@ -56,6 +63,10 @@ interface Props {
   clock: number
   onProvider: (p: 'amazon' | 'openfreemap', attribution: AttribItem[]) => void
   focus?: MapFocus | null
+  me?: MapMe | null
+  /** Increase to fly to `me`. */
+  flyToMe?: number
+  onOpenSafety?: () => void
 }
 
 const LAYERS = {
@@ -294,7 +305,7 @@ function apply(map: MLMap, snap: Snapshot) {
   }
 }
 
-export function RiskMap({ data, visible, lang, clock, onProvider, focus }: Props) {
+export function RiskMap({ data, visible, lang, clock, onProvider, focus, me, flyToMe = 0, onOpenSafety }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const mapRef = useRef<MLMap | null>(null)
   const readyRef = useRef(false)
@@ -438,6 +449,59 @@ export function RiskMap({ data, visible, lang, clock, onProvider, focus }: Props
     const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     map.fitBounds([[w, s], [e, n]], { padding: 40, maxZoom: 11, duration: still ? 0 : 1200 })
   }, [focus])
+
+  // "You are here": one marker that follows the live location; its popup is rebuilt as data changes.
+  const meMarker = useRef<{ marker: Marker; el: HTMLElement; label: HTMLElement; popup: Popup } | null>(null)
+  const meLatest = useRef(me)
+  const openSafety = useRef(onOpenSafety)
+  useEffect(() => {
+    meLatest.current = me
+    openSafety.current = onOpenSafety
+    const map = mapRef.current
+    if (!map) return
+    if (!me) {
+      meMarker.current?.marker.remove()
+      meMarker.current = null
+      return
+    }
+    if (!meMarker.current) {
+      const el = document.createElement('div')
+      el.className = 'jt-me'
+      el.setAttribute('role', 'button')
+      el.setAttribute('tabindex', '0')
+      const dot = document.createElement('span')
+      dot.className = 'jt-me-dot'
+      const label = document.createElement('span')
+      label.className = 'jt-me-label'
+      el.append(dot, label)
+      const popup = new Popup({ maxWidth: '300px', offset: 18, focusAfterOpen: false })
+      const marker = new Marker({ element: el, anchor: 'top', offset: [0, -11] }).setLngLat([me.lon, me.lat]).setPopup(popup).addTo(map)
+      el.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') marker.togglePopup()
+      })
+      meMarker.current = { marker, el, label, popup }
+    }
+    const m = meMarker.current
+    m.marker.setLngLat([me.lon, me.lat])
+    m.label.textContent = me.label
+    m.el.setAttribute('aria-label', me.label)
+    m.el.style.setProperty('--jt-me-halo', me.band && (me.band === 'ORANGE' || me.band === 'RED') ? HEAT_COLORS[me.band].fill : '#1c7ed6')
+    m.popup.setDOMContent(mePopup({ ...me, onOpenSafety: () => openSafety.current?.() }))
+  }, [me, onOpenSafety, lang])
+
+  useEffect(() => () => {
+    meMarker.current?.marker.remove()
+    meMarker.current = null
+  }, [])
+
+  // Fly to the user when asked (the locate button). Reduced motion: jump.
+  useEffect(() => {
+    const map = mapRef.current
+    const at = meLatest.current
+    if (!map || !flyToMe || !at) return
+    const still = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    map.flyTo({ center: [at.lon, at.lat], zoom: Math.max(map.getZoom(), 13.5), duration: still ? 0 : 1200 })
+  }, [flyToMe])
 
   // Popups hold translated text: close them when the language changes.
   useEffect(() => {

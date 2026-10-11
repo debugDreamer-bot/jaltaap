@@ -310,6 +310,16 @@ export function nowFor(q: URLSearchParams): NowResponse {
       return { date, day_band: band, heavy_work_windows: band === 'RED' ? [] : [{ from: '06:00', to: '11:00' }, { from: '16:00', to: '20:00' }],
                noon_pause: band === 'YELLOW' ? null : { from: '12:00', to: '15:00' }, max_temp_c: [41.2, 44.6, 38.9][i], max_wet_bulb_c: [27.5, 29.1, 26.0][i] }
     }),
+    // the same rules as backend risk/warnings.py: worst heat of the next 3 hours, plus the air estimate
+    warnings: [
+      ...(() => {
+        const next = hours.slice(0, 3).filter((h) => h.band === 'ORANGE' || h.band === 'RED')
+        if (!next.length) return []
+        const worst = next.reduce((a, b) => (order.indexOf(b.band) > order.indexOf(a.band) ? b : a))
+        return [{ hazard: 'heat' as const, severity: (worst.band === 'RED' ? 3 : 2) as 2 | 3, level: worst.band, at: worst.time, temp_c: worst.temp_c, wet_bulb_c: worst.wet_bulb_c }]
+      })(),
+      { hazard: 'air' as const, severity: 2 as const, level: 'POOR', aqi: 236 },
+    ],
     source: 'open-meteo',
     data_updated_at: heatFor(undefined).data_updated_at ?? istIso(new Date()),
   }

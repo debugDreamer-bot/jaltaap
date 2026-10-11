@@ -41,7 +41,7 @@ def test_mean_last_needs_most_of_the_window():
 def test_now_endpoint(aws, ctx, monkeypatch):
     from handlers import public_api
     from risk import service
-    monkeypatch.setattr(service, "now_summary", lambda lat, lon, label="": {"location": {"lat": lat, "lon": lon}, "now": {"band": "GREEN"}})
+    monkeypatch.setattr(service, "now_summary", lambda lat, lon, label="", profile=None: {"location": {"lat": lat, "lon": lon}, "now": {"band": "GREEN"}})
     ev = {"routeKey": "GET /now", "queryStringParameters": {"lat": "12.97", "lon": "77.59"}, "headers": {},
           "requestContext": {"http": {"sourceIp": "5.5.5.5"}}}
     assert json.loads(public_api.handler(ev, ctx)["body"])["now"]["band"] == "GREEN"
@@ -70,7 +70,7 @@ def test_speak_endpoint_returns_mp3(aws, ctx, monkeypatch):
     from common import voice
     from handlers import public_api
     from risk import service
-    monkeypatch.setattr(service, "now_summary", lambda lat, lon, label="": {
+    monkeypatch.setattr(service, "now_summary", lambda lat, lon, label="", profile=None: {
         "now": {"band": "GREEN"}, "today": {"day_band": "GREEN", "heavy_work_windows": [], "noon_pause": None}})
     spoken = []
     monkeypatch.setattr(voice, "synthesize", lambda text, lang: spoken.append((text, lang)) or b"ID3audio")

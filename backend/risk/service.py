@@ -13,6 +13,7 @@ from risk import grid as gridmod
 from risk.flood import rain_windows, score_area, score_hotspot
 from risk.heat import HourInput, build_heat_plan, day_band_from_hours, hour_band
 from risk.openmeteo import fetch_point, fetch_points
+from risk.warnings import assess as assess_warnings
 from risk.wetbulb import wet_bulb_or_compute
 
 
@@ -170,12 +171,20 @@ def air_now(lat: float, lon: float, now: datetime | None = None) -> dict:
     return {"air": aq, "uv": uv, "uv_hours": uv_hours, "air_updated_at": a["fetched_at"]}
 
 
-def now_summary(lat: float, lon: float, *, label: str = "") -> dict:
-    """Everything a worker needs on one screen, from the same engines as every other surface."""
+def now_summary(lat: float, lon: float, *, label: str = "", profile: list[str] | None = None) -> dict:
+    """Everything a worker needs on one screen, from the same engines as every other surface.
+
+    With a profile, today's plan and hours carry the personal escalation (+1 band at most) and
+    `warnings` reflect it; without one the output is unchanged.
+    """
     now = now_ist()
     series = fetch_point(lat, lon, forecast_days=4, past_days=2)
-    plan = heat_plan_from_series(series, lat=lat, lon=lon, label=label, day=now.date().isoformat())
+    plan = heat_plan_from_series(series, lat=lat, lon=lon, label=label, day=now.date().isoformat(), profile=profile)
     hours = heat_hours(series, now, 48)
+    if profile:   # today's escalated bands; later hours keep their base band
+        personal = {h["time"][:13]: h["band"] for h in plan["hours"]}
+        for h in hours:
+            h["band"] = personal.get(h["time"][:13], h["band"])
     try:
         extra = air_now(lat, lon, now)
     except Exception:  # noqa: BLE001 - air quality is a bonus; heat still answers
@@ -188,7 +197,8 @@ def now_summary(lat: float, lon: float, *, label: str = "") -> dict:
     for offset in range(3):
         day = (now.date() + timedelta(days=offset)).isoformat()
         try:
-            p = plan if offset == 0 else heat_plan_from_series(series, lat=lat, lon=lon, label=label, day=day)
+            p = plan if offset == 0 else heat_plan_from_series(series, lat=lat, lon=lon, label=label, day=day,
+                                                                  profile=profile)
         except ValueError:
             continue   # the forecast does not reach that day
         day_hours = [h for h in p["hours"] if 6 <= int(h["time"][11:13]) < 20]
@@ -196,11 +206,11 @@ def now_summary(lat: float, lon: float, *, label: str = "") -> dict:
                      "noon_pause": p["noon_pause"],
                      "max_temp_c": max((h["temp_c"] for h in day_hours), default=None),
                      "max_wet_bulb_c": max((h["wet_bulb_c"] for h in day_hours), default=None)})
-    return {
+    summary = {
         "location": {"lat": round(lat, 4), "lon": round(lon, 4), "label": label or cov["city_name"] or "",
                      "city": cov["city_name"], "city_id": cov["city_id"], "coverage": cov["tier"]},
         "now": current,
-        "today": {k: plan[k] for k in ("date", "day_band", "blocks", "heavy_work_windows", "avoid_windows",
+        "today": {k: plan[k] for k in ("date", "day_band", "base_day_band", "blocks", "heavy_work_windows", "avoid_windows",
                                        "noon_pause", "peak_hour", "last_night_min_c", "escalations", "advice_keys")},
         "air": extra["air"],
         "uv": extra["uv"],
@@ -209,3 +219,5 @@ def now_summary(lat: float, lon: float, *, label: str = "") -> dict:
         "source": "open-meteo",
         "data_updated_at": series["fetched_at"],
     }
+    summary["warnings"] = assess_warnings(summary, profile)
+    return summary
